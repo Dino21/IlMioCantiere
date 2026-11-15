@@ -1,0 +1,2688 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Il Mio Cantiere</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23f2b01e'/%3E%3Cpath d='M6 22h20v3H6zM9 13l7-6 7 6v8h-4v-5h-6v5H9z' fill='%231f2328'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ===== Il Mio Cantiere ===== */
+    :root {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --surface-2: #faf9f6;
+      --ink: #1f2328;
+      --ink-2: #4a5059;
+      --ink-3: #7b818a;
+      --line: #e4e0d8;
+      --line-2: #d5d0c5;
+      --accent: #f2b01e;          /* giallo cantiere */
+      --accent-ink: #1f2328;
+      --accent-soft: #fdf3d8;
+      --accent-strong: #b97d00;
+      --side: #1f2328;
+      --side-ink: #c9ccd1;
+      --side-active: #2c3138;
+      --ok: #2f7d4f;   --ok-soft: #e3f2e8;
+      --warn: #b26a00; --warn-soft: #fdf0dc;
+      --bad: #c0392b;  --bad-soft: #fbe5e2;
+      --info: #2c6aa0; --info-soft: #e3eef8;
+      --radius: 10px;
+      --shadow: 0 1px 2px rgba(31,35,40,.06), 0 1px 1px rgba(31,35,40,.04);
+      --font: "Barlow", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --font-head: "Barlow Semi Condensed", "Barlow", system-ui, "Segoe UI", sans-serif;
+      color-scheme: light;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #15171a; --surface: #1d2024; --surface-2: #22262b;
+        --ink: #eceae6; --ink-2: #b9bcc1; --ink-3: #8a8f96;
+        --line: #2e3238; --line-2: #3a3f46;
+        --accent-soft: #3a3020; --accent-strong: #f2b01e;
+        --side: #101215; --side-active: #23272c;
+        --ok: #5cbf86; --ok-soft: #1d3326;
+        --warn: #f0a640; --warn-soft: #3a2c17;
+        --bad: #f07466; --bad-soft: #3d1f1c;
+        --info: #6aa8e0; --info-soft: #1b2b3a;
+        --shadow: none;
+        color-scheme: dark;
+      }
+    }
+
+    * { box-sizing: border-box; }
+    [hidden] { display: none !important; }
+    html, body { margin: 0; }
+    body {
+      background: var(--bg); color: var(--ink);
+      font: 15px/1.45 var(--font);
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; }
+    h1, h2, h3 { font-family: var(--font-head); margin: 0; letter-spacing: .005em; }
+    h1 { font-size: 28px; font-weight: 700; line-height: 1.15; }
+    h2 { font-size: 18px; font-weight: 600; }
+    h3 { font-size: 15px; font-weight: 600; }
+    .num, td.n, th.n { font-variant-numeric: tabular-nums; }
+    svg { fill: currentColor; }
+
+    /* ----- layout ----- */
+    .shell { display: grid; grid-template-columns: 232px 1fr; min-height: 100vh; }
+    .sidebar {
+      background: var(--side); color: var(--side-ink);
+      position: sticky; top: 0; height: 100vh;
+      display: flex; flex-direction: column; padding: 18px 12px;
+    }
+    .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; padding: 4px 8px 22px; color: #fff; }
+    .brand-mark { width: 34px; height: 34px; border-radius: 8px; background: var(--accent); display: grid; place-items: center; flex: none; }
+    .brand-mark svg { width: 22px; height: 22px; fill: var(--accent-ink); }
+    .brand-name { font-family: var(--font-head); font-weight: 700; font-size: 19px; }
+    .nav { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+    .nav a {
+      display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: 8px;
+      text-decoration: none; font-weight: 500; color: var(--side-ink);
+    }
+    .nav a svg { width: 19px; height: 19px; opacity: .8; flex: none; }
+    .nav a:hover { background: var(--side-active); color: #fff; }
+    .nav a.active { background: var(--side-active); color: #fff; box-shadow: inset 3px 0 0 var(--accent); }
+    .nav a.active svg { color: var(--accent); opacity: 1; }
+    .nav .nav-settings { margin-top: auto; }
+
+    .main { padding: 28px 32px 60px; min-width: 0; outline: none; max-width: 1400px; }
+    .loading { color: var(--ink-3); padding: 40px 0; }
+
+    .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
+    .page-head .sub { color: var(--ink-3); margin: 4px 0 0; }
+    .crumb { color: var(--ink-3); text-decoration: none; font-size: 14px; display: inline-block; margin-bottom: 6px; }
+    .crumb:hover { color: var(--ink); }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+    .grid-3-2 { display: grid; grid-template-columns: 3fr 2fr; gap: 18px; }
+    .stack { display: grid; gap: 18px; }
+    .mt { margin-top: 18px; }
+
+    /* ----- card ----- */
+    .card {
+      background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius);
+      box-shadow: var(--shadow); padding: 18px; min-width: 0;
+    }
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+    .card-head .hint { color: var(--ink-3); font-size: 13px; }
+    .card.flush { padding: 0; }
+    .card.flush .card-head { padding: 16px 18px 0; }
+
+    /* ----- KPI ----- */
+    .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
+    .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 14px 16px; box-shadow: var(--shadow); }
+    .kpi .lbl { color: var(--ink-3); font-size: 13px; font-weight: 500; }
+    .kpi .val { font-family: var(--font-head); font-size: 28px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; line-height: 1.15; }
+    .kpi .val small { font-size: 16px; font-weight: 600; color: var(--ink-2); margin-left: 2px; }
+    .kpi .foot { font-size: 13px; color: var(--ink-2); margin-top: 4px; }
+    .kpi.accent { border-color: var(--accent); background: linear-gradient(var(--accent-soft), var(--surface)); }
+
+    /* ----- buttons ----- */
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+      font: 600 14px/1 var(--font); padding: 10px 14px; border-radius: 8px;
+      border: 1px solid var(--line-2); background: var(--surface); color: var(--ink);
+      cursor: pointer; text-decoration: none; white-space: nowrap; min-height: 38px;
+    }
+    .btn:hover { border-color: var(--ink-3); }
+    .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+    .btn.primary:hover { filter: brightness(.96); }
+    .btn.ghost { background: transparent; border-color: transparent; }
+    .btn.ghost:hover { background: var(--surface-2); border-color: var(--line); }
+    .btn.danger { color: var(--bad); }
+    .btn.sm { padding: 6px 10px; min-height: 30px; font-size: 13px; }
+    .btn:disabled { opacity: .5; cursor: default; }
+    .icon-btn { border: 0; background: none; font-size: 24px; line-height: 1; cursor: pointer; color: var(--ink-3); padding: 4px 8px; border-radius: 6px; }
+    .icon-btn:hover { background: var(--surface-2); color: var(--ink); }
+
+    /* ----- forms ----- */
+    label.f { display: grid; gap: 5px; font-size: 13px; font-weight: 600; color: var(--ink-2); min-width: 0; }
+    label.f.full { grid-column: 1 / -1; }
+    label.f .help { font-weight: 400; color: var(--ink-3); font-size: 12px; }
+    input, select, textarea {
+      font: 15px/1.3 var(--font); color: var(--ink);
+      background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px;
+      padding: 9px 10px; min-height: 40px; width: 100%; min-width: 0;
+    }
+    textarea { min-height: 72px; resize: vertical; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; border-color: var(--accent); }
+    input[type=checkbox] { width: 20px; height: 20px; min-height: 0; accent-color: var(--accent-strong); margin: 0; }
+    label.check { display: flex; align-items: center; gap: 10px; font-weight: 500; font-size: 14px; color: var(--ink); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .filters { display: flex; gap: 10px; flex-wrap: wrap; align-items: flex-end; margin-bottom: 14px; }
+    .filters label.f { min-width: 150px; flex: 0 1 200px; }
+    .filters .grow { flex: 1 1 220px; }
+
+    /* period selector */
+    .periodo { display: flex; gap: 8px; align-items: flex-end; flex-wrap: wrap; }
+    .seg { display: inline-flex; background: var(--surface); border: 1px solid var(--line-2); border-radius: 8px; padding: 3px; gap: 2px; flex-wrap: wrap; }
+    .seg button { border: 0; background: none; font: 500 13px var(--font); color: var(--ink-2); padding: 7px 10px; border-radius: 6px; cursor: pointer; }
+    .seg button.on { background: var(--ink); color: var(--surface); }
+    .periodo .custom { display: flex; gap: 6px; }
+    .periodo .custom input { width: 150px; min-height: 36px; padding: 6px 8px; }
+
+    /* ----- tables ----- */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    th { text-align: left; font-weight: 600; color: var(--ink-3); font-size: 12px; text-transform: uppercase; letter-spacing: .04em; padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface-2); }
+    td { padding: 10px 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    tr:last-child td { border-bottom: 0; }
+    th.n, td.n { text-align: right; white-space: nowrap; }
+    tbody tr.click { cursor: pointer; }
+    tbody tr.click:hover td { background: var(--surface-2); }
+    tfoot td { font-weight: 700; border-top: 2px solid var(--line-2); border-bottom: 0; background: var(--surface-2); }
+    td .muted, .muted { color: var(--ink-3); }
+    td.wrap { white-space: normal; min-width: 160px; }
+    .card.flush table th:first-child, .card.flush table td:first-child { padding-left: 18px; }
+    .card.flush table th:last-child, .card.flush table td:last-child { padding-right: 18px; }
+    td a.link, a.link { color: var(--ink); text-decoration: none; font-weight: 600; }
+    td a.link:hover, a.link:hover { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 3px; }
+
+    /* ----- badges ----- */
+    .badge { display: inline-block; font-size: 12px; font-weight: 600; padding: 3px 8px; border-radius: 99px; background: var(--surface-2); color: var(--ink-2); border: 1px solid var(--line); white-space: nowrap; }
+    .badge.ok { background: var(--ok-soft); color: var(--ok); border-color: transparent; }
+    .badge.warn { background: var(--warn-soft); color: var(--warn); border-color: transparent; }
+    .badge.bad { background: var(--bad-soft); color: var(--bad); border-color: transparent; }
+    .badge.info { background: var(--info-soft); color: var(--info); border-color: transparent; display: inline-block; }
+    .badge.acc { background: var(--accent-soft); color: var(--accent-strong); border-color: transparent; }
+
+    /* ----- progress ----- */
+    .prog { height: 8px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+    .prog > i { display: block; height: 100%; background: var(--ink-2); border-radius: 99px; }
+    .prog.ok > i { background: var(--ok); }
+    .prog.warn > i { background: var(--warn); }
+    .prog.bad > i { background: var(--bad); }
+    .prog-row { display: grid; gap: 4px; min-width: 140px; }
+    .prog-row .lbls { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); gap: 8px; }
+
+    /* ----- bar chart ----- */
+    .bars { display: flex; align-items: flex-end; gap: 3px; height: 170px; padding-top: 18px; }
+    .bars { justify-content: center; }
+    .bars .b { flex: 1; max-width: 72px; display: flex; flex-direction: column; justify-content: flex-end; align-items: stretch; height: 100%; position: relative; min-width: 0; }
+    .bars .b i { display: block; background: var(--accent); border-radius: 3px 3px 0 0; min-height: 2px; }
+    .bars .b.zero i { background: var(--line); }
+    .bars .b.we i { background: var(--line-2); }
+    .bars .b:hover i { background: var(--accent-strong); }
+    .bars .b .v { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--ink-2); white-space: nowrap; display: none; }
+    .bars .b:hover .v { display: block; }
+    .bars-x { display: flex; gap: 3px; margin-top: 6px; font-size: 11px; color: var(--ink-3); }
+    .bars-x { justify-content: center; }
+    .bars-x span { flex: 1; max-width: 72px; text-align: center; min-width: 0; overflow: visible; white-space: nowrap; }
+    .bars.big .b .v { display: block; }
+
+    /* horizontal bars */
+    .hbars { display: grid; gap: 10px; }
+    .hbar { display: grid; grid-template-columns: minmax(90px, 160px) 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+    .hbar .t { height: 10px; background: var(--surface-2); border-radius: 99px; overflow: hidden; }
+    .hbar .t i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
+    .hbar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .hbar .val { font-variant-numeric: tabular-nums; color: var(--ink-2); font-weight: 600; }
+
+    /* ----- lists ----- */
+    .list { display: grid; }
+    .list-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+    .list-item:last-child { border-bottom: 0; }
+    .list-item .t { min-width: 0; }
+    .list-item .t b { display: block; font-weight: 600; }
+    .list-item .t span { color: var(--ink-3); font-size: 13px; }
+    .empty { color: var(--ink-3); padding: 18px 0; text-align: center; font-size: 14px; }
+    .chips { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ----- cantieri cards ----- */
+    .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+    .ccard { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; text-decoration: none; display: grid; gap: 12px; box-shadow: var(--shadow); position: relative; }
+    .ccard:hover { border-color: var(--ink-3); }
+    .ccard .top { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+    .ccard h3 { font-size: 17px; }
+    .ccard .meta { color: var(--ink-3); font-size: 13px; }
+    .ccard .figs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+    .ccard .figs div { display: grid; }
+    .ccard .figs b { font-family: var(--font-head); font-size: 19px; font-variant-numeric: tabular-nums; }
+    .ccard .figs span { font-size: 12px; color: var(--ink-3); }
+
+    /* info grid (dettaglio) */
+    .info { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px 20px; }
+    .info div span { display: block; font-size: 12px; color: var(--ink-3); font-weight: 500; }
+    .info div b { font-weight: 500; }
+
+    /* ----- rapportino ----- */
+    .rap-head { display: grid; grid-template-columns: 170px 1fr; gap: 12px; margin-bottom: 14px; }
+    .rap-row td { padding-top: 8px; padding-bottom: 8px; }
+    .rap-row input.h { width: 78px; text-align: right; min-height: 36px; padding: 6px 8px; }
+    .rap-row input.d { min-height: 36px; padding: 6px 8px; }
+    .rap-row.off td:not(:first-child) { opacity: .45; }
+    .rap-row .altro { font-size: 12px; color: var(--warn); display: block; }
+    .rap-tools { display: flex; gap: 8px; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-top: 14px; }
+    .rap-tot { font-weight: 600; }
+
+    /* ----- foglio presenze ----- */
+    .sheet { font-size: 12px; }
+    .sheet th, .sheet td { padding: 6px 4px; text-align: center; border: 1px solid var(--line); }
+    .sheet th { text-transform: none; letter-spacing: 0; font-size: 11px; }
+    .sheet td.name, .sheet th.name { text-align: left; white-space: nowrap; position: sticky; left: 0; background: var(--surface); z-index: 1; padding-left: 10px; min-width: 150px; }
+    .sheet th.name { background: var(--surface-2); }
+    .sheet .we { background: var(--surface-2); }
+    .sheet .cell-ass { font-weight: 700; color: var(--info); }
+    .sheet .cell-ass.Malattia, .sheet .cell-ass.Infortunio { color: var(--bad); }
+    .sheet .cell-ass.Maltempo { color: var(--warn); }
+    .sheet .str { color: var(--accent-strong); font-weight: 700; }
+    .legend { display: flex; gap: 14px; flex-wrap: wrap; font-size: 12px; color: var(--ink-3); margin-top: 10px; }
+    .legend b { color: var(--ink-2); }
+
+    /* tabs */
+    .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 18px; overflow-x: auto; }
+    .tabs button { border: 0; background: none; font: 600 14px var(--font); padding: 10px 14px; color: var(--ink-3); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+    .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+
+    /* ----- modal ----- */
+    dialog.modal {
+      border: 0; padding: 0; border-radius: 14px; width: min(620px, calc(100vw - 24px));
+      background: var(--surface); color: var(--ink); box-shadow: 0 20px 60px rgba(0,0,0,.25);
+      max-height: calc(100vh - 32px);
+    }
+    dialog.modal::backdrop { background: rgba(20,22,25,.45); }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+    .modal-body { padding: 18px 20px; }
+    .modal-foot { display: flex; gap: 8px; align-items: center; padding: 14px 20px; border-top: 1px solid var(--line); background: var(--surface-2); border-radius: 0 0 14px 14px; }
+    .spacer { flex: 1; }
+    .form-err { margin: 12px 0 0; color: var(--bad); background: var(--bad-soft); padding: 8px 12px; border-radius: 8px; font-size: 14px; }
+
+    /* toasts */
+    .toasts { position: fixed; right: 20px; bottom: 20px; display: grid; gap: 8px; z-index: 50; }
+    .toast { background: var(--ink); color: var(--surface); padding: 11px 16px; border-radius: 10px; font-weight: 500; box-shadow: 0 8px 24px rgba(0,0,0,.2); max-width: 380px; animation: tin .18s ease-out; }
+    .toast.err { background: var(--bad); color: #fff; }
+    @keyframes tin { from { transform: translateY(8px); opacity: 0; } }
+
+    /* welcome */
+    .welcome { text-align: center; padding: 40px 20px; }
+    .welcome h2 { font-size: 24px; margin-bottom: 8px; }
+    .welcome p { color: var(--ink-2); max-width: 520px; margin: 0 auto 20px; }
+    .welcome .actions { justify-content: center; }
+
+    /* ----- responsive ----- */
+    @media (max-width: 1100px) {
+      .grid-2, .grid-3-2 { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      body { font-size: 15px; }
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: fixed; bottom: 0; left: 0; right: 0; top: auto; height: auto; z-index: 20;
+        padding: 4px 4px calc(4px + env(safe-area-inset-bottom)); flex-direction: row;
+      }
+      .brand { display: none; }
+      .nav { flex-direction: row; justify-content: space-between; overflow-x: auto; gap: 0; }
+      .nav a { flex-direction: column; gap: 2px; padding: 6px 4px; font-size: 10.5px; flex: 1 0 54px; text-align: center; }
+      .nav a.active { box-shadow: inset 0 3px 0 var(--accent); }
+      .nav .nav-settings { margin-top: 0; }
+      .main { padding: 18px 16px 96px; }
+      h1 { font-size: 24px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .rap-head { grid-template-columns: 1fr; }
+      .kpis { grid-template-columns: 1fr 1fr; gap: 10px; }
+      .kpi .val { font-size: 23px; }
+      .filters label.f { flex: 1 1 140px; min-width: 0; }
+      .cards { grid-template-columns: 1fr; }
+      .periodo .custom input { width: 100%; }
+      .periodo .custom { width: 100%; }
+      .toasts { left: 16px; right: 16px; bottom: 84px; }
+      td.hide-sm, th.hide-sm { display: none; }
+      .hbar { grid-template-columns: 100px 1fr auto; }
+      #rapTab th, #rapTab td { padding-left: 6px; padding-right: 6px; }
+      .rap-row input.h { width: 58px; padding: 6px 6px; }
+      #rapTab td:first-child, #rapTab th:first-child { padding-left: 0; width: 28px; }
+      #rapTab .muted { display: block; font-size: 12px; }
+    }
+
+    /* ----- stampa ----- */
+    @media print {
+      body { background: #fff; color: #000; font-size: 11px; }
+      .sidebar, .no-print, .toasts, .actions, .tabs, .filters, .periodo { display: none !important; }
+      .shell { display: block; }
+      .main { padding: 0; max-width: none; }
+      .card { border: 0; box-shadow: none; padding: 0; }
+      .table-wrap { overflow: visible; }
+      .sheet td.name, .sheet th.name { position: static; }
+      .print-title { display: block !important; }
+    }
+    .print-title { display: none; margin-bottom: 10px; }
+
+    /* ----- accesso, utente, ruoli ----- */
+    .accesso { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; background: var(--side); }
+    .login-card { width: min(420px, 100%); background: var(--surface); border-radius: 16px; padding: 28px; box-shadow: 0 20px 60px rgba(0,0,0,.3); }
+    .login-card h1 { margin: 18px 0 14px; font-size: 26px; }
+    .login-card .stack { gap: 14px; }
+    .login-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-head); font-weight: 700; font-size: 20px; }
+    .login-brand .brand-mark svg { width: 22px; height: 22px; fill: var(--accent-ink); }
+
+    .me { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 8px 0; margin-top: 12px; border-top: 1px solid #ffffff1a; }
+    .me-name { display: grid; min-width: 0; font-size: 13px; }
+    .me-name b { color: #fff; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .me-name span { color: var(--side-ink); opacity: .7; font-size: 12px; }
+    .me .btn { color: var(--side-ink); }
+    .me .btn:hover { background: var(--side-active); border-color: transparent; color: #fff; }
+    .nav .nav-settings ~ a { margin-top: 0; }
+
+    body.ruolo-caposquadra [data-admin] { display: none !important; }
+    body:not(.ruolo-caposquadra) .solo-capo { display: none !important; }
+    .solo-mobile { display: none; }
+
+
+    @media (max-width: 760px) {
+      .me { display: none; }
+      .solo-mobile { display: inline-flex; }
+    }
+  </style>
+</head>
+<body>
+  <div id="accesso" class="accesso" hidden></div>
+  <div class="shell" hidden>
+    <aside class="sidebar">
+      <a class="brand" href="#/">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M6 22h20v3H6zM9 13l7-6 7 6v8h-4v-5h-6v5H9z"/></svg>
+        </span>
+        <span class="brand-name">Il Mio Cantiere</span>
+      </a>
+      <nav class="nav" id="nav">
+        <a href="#/" data-r="" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3zm0 8h8v-6H3zm10 0h8V11h-8zm0-18v6h8V3z"/></svg><span>Panoramica</span></a>
+        <a href="#/ore" data-r="ore">
+          <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm1 10.4 3.6 2.1-.8 1.4L11 13V6h2z"/></svg><span>Registro ore</span></a>
+        <a href="#/cantieri" data-r="cantieri" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M2 20h20v2H2zm2-2V9l6-4v13zm8 0V3l8 5v10z"/></svg><span>Cantieri</span></a>
+        <a href="#/operai" data-r="operai" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-4 0-8 2-8 5v2h16v-2c0-3-4-5-8-5z"/></svg><span>Operai</span></a>
+        <a href="#/spese" data-r="spese" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M4 4h16v4H4zm0 6h16v10H4zm3 3v2h6v-2z"/></svg><span>Spese</span></a>
+        <a href="#/report" data-r="report" data-admin>
+          <svg viewBox="0 0 24 24"><path d="M4 20V10h3v10zm6 0V4h3v16zm6 0v-7h3v7z"/></svg><span>Report</span></a>
+        <a href="#/impostazioni" data-r="impostazioni" data-admin class="nav-settings">
+          <svg viewBox="0 0 24 24"><path d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7 7 0 0 0-1.7-1L15 3h-4l-.4 2.7a7 7 0 0 0-1.7 1l-2.5-1-2 3.5L6.5 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7 7 0 0 0 1.7 1L11 21h4l.4-2.7a7 7 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z"/></svg><span>Impostazioni</span></a>
+      </nav>
+      <div class="me">
+        <div class="me-name" id="chiSono"></div>
+        <button class="btn sm ghost" data-esci>Esci</button>
+      </div>
+    </aside>
+    <main class="main" id="app" tabindex="-1">
+      <div class="loading">Caricamento…</div>
+    </main>
+  </div>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+    <script type="module">
+    // Versione SDK Firebase: per aggiornarla cambia il numero nei tre indirizzi qui sotto.
+    import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+    import {
+      getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail, createUserWithEmailAndPassword,
+    } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js';
+    import {
+      getFirestore, collection, doc, onSnapshot, getDoc, getDocs, writeBatch, deleteField,
+    } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+
+    // Configurazione del progetto Firebase (Console → Impostazioni progetto → Le tue app).
+    // Non è un segreto: chi può leggere/scrivere i dati lo decidono le regole in firestore.rules.
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfjgF2sTEIrIQ07oRRm8QLjvWV7GRMw4I",
+      authDomain: "il-mio-cantiere.firebaseapp.com",
+      projectId: "il-mio-cantiere",
+      storageBucket: "il-mio-cantiere.firebasestorage.app",
+      messagingSenderId: "184269685171",
+      appId: "1:184269685171:web:286e49cddeff05cab60bc6"
+    };
+
+    // =====================================================================
+    //  DATI: collegamento a Firebase e copia in memoria
+    // =====================================================================
+
+    const fbApp = initializeApp(firebaseConfig);
+    const auth = getAuth(fbApp);
+    const db = getFirestore(fbApp);
+    const CAMPO_ELIMINATO = deleteField(); // in una scrittura "merge" cancella il campo
+
+    // Dati in memoria, sincronizzati in tempo reale con Firestore: le pagine leggono da qui.
+    const dati = {
+      utente: null,  // { uid, email, nome, ruolo }
+      operai: [],
+      cantieri: [],
+      giorni: [],    // [{ id: 'aaaa-mm-gg', righe: { idRiga: {...} } }]  un documento per giorno
+      spese: [],
+      scadenze: [],
+    };
+
+    const isAdmin = () => dati.utente?.ruolo === 'admin';
+    const nomeCompleto = (o) => `${o.cognome ?? ''} ${o.nome ?? ''}`.trim();
+
+    // Tutte le registrazioni ore "appiattite": una riga per registrazione, con id e data
+    let righeCache = null;
+    function righe() {
+      righeCache ??= dati.giorni.flatMap((g) => Object.entries(g.righe ?? {}).map(([id, r]) => ({ ...r, id, data: g.id })));
+      return righeCache;
+    }
+
+    let annullaAscolto = [];
+
+    /** Avvia l'ascolto delle collezioni. Si risolve quando sono arrivati i primi dati di tutte. */
+    function avviaDati() {
+      fermaDati();
+      const collezioni = isAdmin() ? ['operai', 'cantieri', 'giorni', 'spese', 'scadenze'] : ['operai', 'cantieri', 'giorni'];
+      return Promise.all(collezioni.map((nome) => new Promise((ok, ko) => {
+        let primo = true;
+        annullaAscolto.push(onSnapshot(collection(db, nome), (snap) => {
+          const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          dati[nome] = nome === 'operai' ? docs.map((o) => ({ ...o, nomeCompleto: nomeCompleto(o) })) : docs;
+          if (nome === 'giorni') righeCache = null;
+          if (primo) { primo = false; ok(); }
+          else if (!snap.metadata.hasPendingWrites) datiCambiati(); // modifiche arrivate da un altro dispositivo
+        }, (e) => { console.error(nome, e); if (primo) { primo = false; ko(e); } }));
+      })));
+    }
+
+    function fermaDati() {
+      annullaAscolto.forEach((f) => f());
+      annullaAscolto = [];
+      for (const k of ['operai', 'cantieri', 'giorni', 'spese', 'scadenze']) dati[k] = [];
+      righeCache = null;
+    }
+
+    let timerCambiati;
+    function datiCambiati() {
+      clearTimeout(timerCambiati);
+      timerCambiati = setTimeout(() => window.dispatchEvent(new Event('dati-aggiornati')), 400);
+    }
+
+    /** Esegue più scritture insieme: [{ tipo: 'set' | 'merge' | 'delete', coll, id, dati }] (max 450 per blocco). */
+    async function scriviFirestore(operazioni) {
+      for (let i = 0; i < operazioni.length; i += 450) {
+        const b = writeBatch(db);
+        for (const op of operazioni.slice(i, i + 450)) {
+          const ref = doc(db, op.coll, op.id);
+          if (op.tipo === 'delete') b.delete(ref);
+          else b.set(ref, op.dati, op.tipo === 'merge' ? { merge: true } : {});
+        }
+        await b.commit();
+      }
+    }
+
+    /**
+     * Scrittura usata dalle pagine. Se il server non risponde entro 3 secondi (niente rete in cantiere)
+     * la modifica resta in coda nel browser e parte da sola appena torna la connessione (a pagina aperta).
+     */
+    async function scrivi(operazioni) {
+      const p = scriviFirestore(operazioni);
+      const attesa = new Promise((r) => setTimeout(() => r('in-coda'), 3000));
+      try {
+        if (await Promise.race([p.then(() => 'ok'), attesa]) === 'in-coda') {
+          toast('Connessione lenta o assente: la modifica verrà inviata appena possibile. Non chiudere la pagina.');
+          p.catch((e) => toast('Un salvataggio non è andato a buon fine: ' + messaggioErrore(e), 'err'));
+        }
+      } catch (e) {
+        throw new Error(messaggioErrore(e));
+      }
+    }
+
+    const nuovoId = () => doc(collection(db, 'id')).id;
+
+    async function leggiDoc(nome, id) {
+      const s = await getDoc(doc(db, nome, id));
+      return s.exists() ? { id: s.id, ...s.data() } : null;
+    }
+
+    async function leggiCollezione(nome) {
+      return (await getDocs(collection(db, nome))).docs.map((d) => ({ id: d.id, ...d.data() }));
+    }
+
+    /** Toglie i campi calcolati prima di salvare */
+    function pulito(oggetto, ...escludi) {
+      const o = { ...oggetto };
+      for (const k of ['id', 'nomeCompleto', ...escludi]) delete o[k];
+      for (const k of Object.keys(o)) if (o[k] === undefined) o[k] = null;
+      return o;
+    }
+
+    /** Crea un account senza uscire da quello attuale (usa un'istanza temporanea di Firebase). */
+    async function creaAccount(email, password) {
+      const temp = initializeApp(firebaseConfig, 'temp-' + Date.now());
+      try {
+        const cred = await createUserWithEmailAndPassword(getAuth(temp), email, password);
+        await signOut(getAuth(temp));
+        return cred.user.uid;
+      } finally {
+        await deleteApp(temp);
+      }
+    }
+
+    function messaggioErrore(e) {
+      const m = {
+        'permission-denied': 'Non hai i permessi per questa operazione.',
+        'unavailable': 'Connessione assente: riprova quando torna la rete.',
+        'auth/invalid-credential': 'Email o password non corretti.',
+        'auth/wrong-password': 'Email o password non corretti.',
+        'auth/user-not-found': 'Email o password non corretti.',
+        'auth/invalid-email': 'Indirizzo email non valido.',
+        'auth/too-many-requests': 'Troppi tentativi: riprova tra qualche minuto.',
+        'auth/email-already-in-use': 'Esiste già un account con questa email.',
+        'auth/weak-password': 'La password deve avere almeno 6 caratteri.',
+        'auth/network-request-failed': 'Connessione assente.',
+        'auth/operation-not-allowed': 'Accesso con email/password non attivo: abilitalo nella console Firebase (Authentication → Metodo di accesso).',
+      };
+      return m[e?.code] ?? e?.message ?? String(e);
+    }
+
+    // =====================================================================
+    //  UTILITÀ: formattazione, finestre, tabelle, grafici, CSV, periodo
+    // =====================================================================
+
+
+    const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) =>
+      ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    const nf = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 2 });
+    const nf0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
+    const eur = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR' });
+    const eur0 = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+
+    const num = (n) => nf.format(n || 0);
+    const ore = (n) => nf.format(n || 0) + ' h';
+    const euro = (n) => eur.format(n || 0);
+    const euro0 = (n) => eur0.format(n || 0);
+    const intero = (n) => nf0.format(n || 0);
+
+    function toISO(d) {
+      const z = (n) => String(n).padStart(2, '0');
+      return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`;
+    }
+    const oggiISO = () => toISO(new Date());
+    const parseISO = (s) => new Date(s + 'T00:00:00');
+    const data = (s) => (s ? parseISO(s).toLocaleDateString('it-IT') : '—');
+    const dataBreve = (s) => (s ? parseISO(s).toLocaleDateString('it-IT', { day: 'numeric', month: 'short' }) : '—');
+    const dataLunga = (s) => parseISO(s).toLocaleDateString('it-IT', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+    const giornoSett = (s) => parseISO(s).toLocaleDateString('it-IT', { weekday: 'short' });
+    const nomeMese = (ym) => {
+      const [y, m] = ym.split('-').map(Number);
+      return new Date(y, m - 1, 1).toLocaleDateString('it-IT', { month: 'short', year: '2-digit' });
+    };
+    const nomeMeseLungo = (y, m) => new Date(y, m - 1, 1).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+
+    function addDays(iso, n) { const d = parseISO(iso); d.setDate(d.getDate() + n); return toISO(d); }
+
+    // ----- badge -----
+    function badgeStato(stato) {
+      const cls = { 'In corso': 'ok', 'Pianificato': 'info', 'Sospeso': 'warn', 'Completato': '' }[stato] ?? '';
+      return `<span class="badge ${cls}">${esc(stato)}</span>`;
+    }
+    function badgeTipo(tipo) {
+      if (tipo === 'Lavoro') return '';
+      const cls = { Malattia: 'bad', Infortunio: 'bad', Maltempo: 'warn', Ferie: 'info', Permesso: 'info' }[tipo] ?? '';
+      return `<span class="badge ${cls}">${esc(tipo)}</span>`;
+    }
+    function badgeScadenza(giorni) {
+      if (giorni < 0) return `<span class="badge bad">Scaduto da ${-giorni} gg</span>`;
+      if (giorni === 0) return `<span class="badge bad">Scade oggi</span>`;
+      if (giorni <= 30) return `<span class="badge warn">Tra ${giorni} gg</span>`;
+      return `<span class="badge ok">Valido</span>`;
+    }
+
+    // ----- progress (es. costo/budget) -----
+    function progresso(valore, massimo, { etichetta = '', formato = euro0 } = {}) {
+      if (!massimo) return `<span class="muted">${formato(valore)}${etichetta ? ' ' + etichetta : ''}</span>`;
+      const pct = (valore / massimo) * 100;
+      const cls = pct > 100 ? 'bad' : pct > 85 ? 'warn' : 'ok';
+      return `<div class="prog-row">
+        <div class="lbls"><span>${formato(valore)} / ${formato(massimo)}</span><b class="num">${nf0.format(pct)}%</b></div>
+        <div class="prog ${cls}"><i style="width:${Math.min(pct, 100)}%"></i></div></div>`;
+    }
+
+    // ----- grafici semplici -----
+    function barre(dati, { formato = num, etichette = true, grande = false } = {}) {
+      const max = Math.max(1, ...dati.map((d) => d.valore));
+      const ogni = Math.ceil(dati.length / 10);
+      return `<div class="bars ${grande ? 'big' : ''}">${dati.map((d) => `
+          <div class="b ${d.valore ? '' : 'zero'} ${d.weekend ? 'we' : ''}" title="${esc(d.titolo ?? d.label)}: ${esc(formato(d.valore))}">
+            <span class="v">${esc(formato(d.valore))}</span><i style="height:${(d.valore / max) * 100}%"></i>
+          </div>`).join('')}</div>
+        ${etichette ? `<div class="bars-x">${dati.map((d, i) => `<span>${i % ogni === 0 ? esc(d.label) : ''}</span>`).join('')}</div>` : ''}`;
+    }
+
+    function barreOrizzontali(dati, formato = ore) {
+      if (!dati.length) return `<div class="empty">Nessun dato</div>`;
+      const max = Math.max(1, ...dati.map((d) => d.valore));
+      return `<div class="hbars">${dati.map((d) => `
+        <div class="hbar"><span class="name" title="${esc(d.label)}">${d.href ? `<a class="link" href="${d.href}">${esc(d.label)}</a>` : esc(d.label)}</span>
+          <span class="t"><i style="width:${(d.valore / max) * 100}%"></i></span>
+          <span class="val">${esc(formato(d.valore))}</span></div>`).join('')}</div>`;
+    }
+
+    // ----- toast -----
+    function toast(msg, tipo = 'ok') {
+      const t = document.createElement('div');
+      t.className = 'toast ' + (tipo === 'err' ? 'err' : '');
+      t.textContent = msg;
+      document.getElementById('toasts').append(t);
+      setTimeout(() => t.remove(), tipo === 'err' ? 6000 : 3000);
+    }
+
+    // ----- modal -----
+    function modal(inner) {
+      const d = document.createElement('dialog');
+      d.className = 'modal';
+      d.innerHTML = inner;
+      document.body.append(d);
+      d.showModal();
+      const close = () => { d.close(); d.remove(); };
+      d.addEventListener('click', (e) => { if (e.target.closest('[data-close]')) close(); });
+      d.addEventListener('cancel', (e) => { e.preventDefault(); close(); });
+      return { el: d, close };
+    }
+
+    function conferma(messaggio, { titolo = 'Conferma', ok = 'Elimina', pericolo = true } = {}) {
+      return new Promise((resolve) => {
+        const m = modal(`
+          <div class="modal-head"><h2>${esc(titolo)}</h2><button type="button" class="icon-btn" data-close aria-label="Chiudi">×</button></div>
+          <div class="modal-body"><p style="margin:0">${esc(messaggio)}</p></div>
+          <div class="modal-foot"><span class="spacer"></span>
+            <button type="button" class="btn ghost" data-close>Annulla</button>
+            <button type="button" class="btn ${pericolo ? 'danger' : 'primary'}" data-ok>${esc(ok)}</button></div>`);
+        let fatto = false;
+        m.el.querySelector('[data-ok]').addEventListener('click', () => { fatto = true; m.close(); resolve(true); });
+        m.el.addEventListener('close', () => { if (!fatto) resolve(false); });
+      });
+    }
+
+    // ----- form generico in finestra -----
+    // campi: [{ name, label, type: text|number|date|select|textarea|checkbox|month, options, required, step, min, full, help, placeholder, list }]
+    function campoHTML(c, v) {
+      const req = c.required ? 'required' : '';
+      const id = 'f_' + c.name;
+      const val = v ?? c.default ?? '';
+      const help = c.help ? `<span class="help">${esc(c.help)}</span>` : '';
+      if (c.type === 'checkbox') {
+        return `<label class="check ${c.full ? 'full' : ''}" style="${c.full ? 'grid-column:1/-1' : ''}"><input type="checkbox" name="${c.name}" ${val ? 'checked' : ''}> ${esc(c.label)}</label>`;
+      }
+      let input;
+      if (c.type === 'select') {
+        const opts = (c.options || []).map((o) => (typeof o === 'object' ? o : { value: o, label: o }));
+        input = `<select id="${id}" name="${c.name}" ${req}>
+          ${c.vuoto !== undefined ? `<option value="">${esc(c.vuoto)}</option>` : ''}
+          ${opts.map((o) => `<option value="${esc(o.value)}" ${String(o.value) === String(val) ? 'selected' : ''}>${esc(o.label)}</option>`).join('')}
+        </select>`;
+      } else if (c.type === 'textarea') {
+        input = `<textarea id="${id}" name="${c.name}" ${req} placeholder="${esc(c.placeholder ?? '')}">${esc(val)}</textarea>`;
+      } else {
+        const list = c.list ? `list="dl_${c.name}"` : '';
+        const dl = c.list ? `<datalist id="dl_${c.name}">${c.list.map((o) => `<option value="${esc(o)}">`).join('')}</datalist>` : '';
+        input = `<input id="${id}" name="${c.name}" type="${c.type || 'text'}" value="${esc(val)}" ${req} ${list}
+          ${c.step ? `step="${c.step}"` : ''} ${c.min !== undefined ? `min="${c.min}"` : ''} ${c.max !== undefined ? `max="${c.max}"` : ''}
+          placeholder="${esc(c.placeholder ?? '')}" ${c.type === 'number' ? 'inputmode="decimal"' : ''}>${dl}`;
+      }
+      return `<label class="f ${c.full ? 'full' : ''}" for="${id}">${esc(c.label)}${c.required ? ' *' : ''}${input}${help}</label>`;
+    }
+
+    function leggiForm(form, campi) {
+      const v = {};
+      for (const c of campi) {
+        const el = form.elements[c.name];
+        if (!el) continue;
+        if (c.type === 'checkbox') v[c.name] = el.checked;
+        else if (c.type === 'number') v[c.name] = el.value === '' ? null : Number(String(el.value).replace(',', '.'));
+        else v[c.name] = el.value.trim() === '' ? null : el.value.trim();
+      }
+      return v;
+    }
+
+    function formModal({ titolo, campi, valori = {}, salva, elimina, testoSalva = 'Salva', onMount }) {
+      const m = modal(`<form novalidate>
+        <div class="modal-head"><h2>${esc(titolo)}</h2><button type="button" class="icon-btn" data-close aria-label="Chiudi">×</button></div>
+        <div class="modal-body">
+          <div class="form-grid">${campi.map((c) => campoHTML(c, valori[c.name])).join('')}</div>
+          <p class="form-err" hidden></p>
+        </div>
+        <div class="modal-foot">
+          ${elimina ? '<button type="button" class="btn ghost danger" data-del>Elimina</button>' : ''}
+          <span class="spacer"></span>
+          <button type="button" class="btn ghost" data-close>Annulla</button>
+          <button class="btn primary" type="submit">${esc(testoSalva)}</button>
+        </div></form>`);
+      const form = m.el.querySelector('form');
+      const err = m.el.querySelector('.form-err');
+      const mostraErrore = (msg) => { err.textContent = msg; err.hidden = false; };
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const v = leggiForm(form, campi);
+        const mancanti = campi.filter((c) => c.required && (v[c.name] === null || v[c.name] === undefined));
+        if (mancanti.length) return mostraErrore('Compila: ' + mancanti.map((c) => c.label).join(', '));
+        const btn = form.querySelector('[type=submit]');
+        btn.disabled = true;
+        try { await salva(v); m.close(); }
+        catch (ex) { mostraErrore(ex.message); }
+        finally { btn.disabled = false; }
+      });
+      if (elimina) {
+        m.el.querySelector('[data-del]').addEventListener('click', async () => {
+          if (!(await conferma('Eliminare definitivamente questo elemento?'))) return;
+          try { await elimina(); m.close(); }
+          catch (ex) { mostraErrore(ex.message); }
+        });
+      }
+      onMount?.(form);
+      setTimeout(() => form.querySelector('input:not([type=checkbox]),select,textarea')?.focus(), 30);
+      return m;
+    }
+
+    // ----- CSV (separatore ; e BOM: si apre bene con Excel in italiano) -----
+    function scaricaCSV(nomeFile, righe) {
+      const cella = (v) => {
+        if (v === null || v === undefined) return '';
+        if (typeof v === 'number') return String(v).replace('.', ',');
+        const s = String(v);
+        return /[;"\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+      };
+      const testo = '﻿' + righe.map((r) => r.map(cella).join(';')).join('\r\n');
+      const url = URL.createObjectURL(new Blob([testo], { type: 'text/csv;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = nomeFile;
+      document.body.append(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    }
+
+    // ----- selettore periodo (condiviso tra le pagine) -----
+    const PRESET = [
+      ['mese', 'Questo mese'], ['mesePrec', 'Mese scorso'], ['30', 'Ultimi 30 gg'],
+      ['anno', "Quest'anno"], ['tutto', 'Tutto'], ['custom', 'Date…'],
+    ];
+    const periodo = { preset: 'mese', da: null, a: null };
+
+    function calcolaPeriodo(p = periodo) {
+      const oggi = new Date();
+      const y = oggi.getFullYear(), m = oggi.getMonth();
+      switch (p.preset) {
+        case 'mese': return { da: toISO(new Date(y, m, 1)), a: toISO(new Date(y, m + 1, 0)) };
+        case 'mesePrec': return { da: toISO(new Date(y, m - 1, 1)), a: toISO(new Date(y, m, 0)) };
+        case '30': return { da: addDays(toISO(oggi), -29), a: toISO(oggi) };
+        case 'anno': return { da: `${y}-01-01`, a: `${y}-12-31` };
+        case 'tutto': return { da: null, a: null };
+        default: return { da: p.da, a: p.a };
+      }
+    }
+
+    function descriviPeriodo() {
+      const { da, a } = calcolaPeriodo();
+      if (!da && !a) return 'Tutto il periodo';
+      if (da && a) return `dal ${data(da)} al ${data(a)}`;
+      return da ? `dal ${data(da)}` : `fino al ${data(a)}`;
+    }
+
+    function periodoHTML() {
+      const c = calcolaPeriodo();
+      return `<div class="periodo">
+        <div class="seg" role="group" aria-label="Periodo">
+          ${PRESET.map(([k, l]) => `<button type="button" data-p="${k}" class="${periodo.preset === k ? 'on' : ''}">${l}</button>`).join('')}
+        </div>
+        <div class="custom" ${periodo.preset === 'custom' ? '' : 'hidden'}>
+          <input type="date" data-da value="${c.da ?? ''}" aria-label="Dal">
+          <input type="date" data-a value="${c.a ?? ''}" aria-label="Al">
+        </div></div>`;
+    }
+
+    function collegaPeriodo(root, onChange) {
+      const box = root.querySelector('.periodo');
+      if (!box) return;
+      box.querySelectorAll('[data-p]').forEach((b) => b.addEventListener('click', () => {
+        if (b.dataset.p === 'custom') {
+          const c = calcolaPeriodo();
+          periodo.da = c.da; periodo.a = c.a;
+        }
+        periodo.preset = b.dataset.p;
+        onChange();
+      }));
+      box.querySelectorAll('[data-da],[data-a]').forEach((i) => i.addEventListener('change', () => {
+        periodo.preset = 'custom';
+        periodo.da = box.querySelector('[data-da]').value || null;
+        periodo.a = box.querySelector('[data-a]').value || null;
+        onChange();
+      }));
+    }
+
+    // ----- tabella semplice -----
+    // colonne: [{ t: 'Titolo', v: riga => html, n: true (numerico), cls }]
+    function tabella(colonne, righe, { click, piede, vuoto = 'Nessun dato nel periodo' } = {}) {
+      if (!righe.length) return `<div class="empty">${esc(vuoto)}</div>`;
+      return `<div class="table-wrap"><table>
+        <thead><tr>${colonne.map((c) => `<th class="${c.n ? 'n' : ''} ${c.cls ?? ''}">${esc(c.t)}</th>`).join('')}</tr></thead>
+        <tbody>${righe.map((r, i) => `<tr ${click ? `class="click" data-i="${i}"` : ''}>${colonne.map((c) => `<td class="${c.n ? 'n' : ''} ${c.cls ?? ''}">${c.v(r)}</td>`).join('')}</tr>`).join('')}</tbody>
+        ${piede ? `<tfoot><tr>${colonne.map((c, i) => `<td class="${c.n ? 'n' : ''} ${c.cls ?? ''}">${piede[i] ?? ''}</td>`).join('')}</tr></tfoot>` : ''}
+      </table></div>`;
+    }
+
+    function collegaClick(root, righe, fn) {
+      root.querySelectorAll('tbody tr.click').forEach((tr) => tr.addEventListener('click', (e) => {
+        if (e.target.closest('a,button')) return;
+        fn(righe[Number(tr.dataset.i)]);
+      }));
+    }
+
+    const somma = (arr, f) => arr.reduce((s, x) => s + (f(x) || 0), 0);
+
+    // =====================================================================
+    //  LOGICA: calcoli, riepiloghi, validazioni, salvataggi
+    // =====================================================================
+
+
+    const STATI_CANTIERE = ['In corso', 'Pianificato', 'Sospeso', 'Completato'];
+    const TIPI_REGISTRO = ['Lavoro', 'Ferie', 'Permesso', 'Malattia', 'Infortunio', 'Maltempo', 'Altro'];
+    const CATEGORIE_SPESA = ['Materiali', 'Noleggi', 'Subappalti', 'Trasporti', 'Smaltimento rifiuti', 'Altro'];
+    const TIPI_DOCUMENTO = ['Visita medica', 'Formazione sicurezza', 'Primo soccorso', 'Antincendio', 'Lavori in quota / DPI III cat.',
+      'Ponteggi (PiMUS)', 'Patentino macchine movimento terra', 'Patentino gru', "Carta d'identità", 'Patente'];
+    const QUALIFICHE = ['Capocantiere', 'Muratore specializzato', 'Muratore', 'Manovale', 'Carpentiere', 'Ferraiolo',
+      'Escavatorista', 'Gruista', 'Autista', 'Impiegato tecnico'];
+    const MAX_ORE_GIORNO = 24;
+
+    // ---------- aiuti ----------
+    class ErroreUtente extends Error {}
+    const errore = (msg) => { throw new ErroreUtente(msg); };
+
+    const distinti = (arr, f) => new Set(arr.map(f)).size;
+    function gruppi(arr, chiave) {
+      const m = new Map();
+      for (const x of arr) {
+        const k = chiave(x);
+        if (!m.has(k)) m.set(k, []);
+        m.get(k).push(x);
+      }
+      return [...m.entries()];
+    }
+    const min = (arr, f) => arr.map(f).sort()[0];
+    const max = (arr, f) => arr.map(f).sort().at(-1);
+    const confronta = (a, b) => String(a ?? '').localeCompare(String(b ?? ''), 'it');
+    const giorniTra = (da, a) => Math.round((parseISO(a) - parseISO(da)) / 86400000);
+    const arrot = (n) => Math.round(n * 100) / 100;
+    const pulisci = (s) => (s === null || s === undefined || String(s).trim() === '' ? null : String(s).trim());
+    const numero = (v) => (v === null || v === undefined || v === '' ? null : Number(v));
+
+    const isLavoro = (r) => r.tipo === 'Lavoro';
+    const totale = (r) => (r.ore || 0) + (r.oreStraordinario || 0);
+    const costo = (r) => (isLavoro(r) ? arrot((r.costoOrario || 0) * (r.ore || 0) + (r.costoOrarioStraordinario || 0) * (r.oreStraordinario || 0)) : 0);
+    const nelPeriodo = (arr, da, a) => arr.filter((x) => (!da || x.data >= da) && (!a || x.data <= a));
+
+    const mappa = (arr) => new Map(arr.map((x) => [x.id, x]));
+    function trovaOperaio(id) { return dati.operai.find((o) => o.id === id) ?? errore('Operaio non trovato'); }
+    function trovaCantiere(id) { return dati.cantieri.find((c) => c.id === id) ?? errore('Cantiere non trovato'); }
+
+    function perMese(lavoro) {
+      return gruppi(lavoro, (r) => r.data.slice(0, 7))
+        .sort((a, b) => confronta(a[0], b[0]))
+        .map(([mese, g]) => ({
+          mese, ore: somma(g, (r) => r.ore), straordinario: somma(g, (r) => r.oreStraordinario),
+          totale: somma(g, totale), costo: somma(g, costo),
+        }));
+    }
+
+    function vista(r, operai = mappa(dati.operai), cantieri = mappa(dati.cantieri)) {
+      return {
+        id: r.id, data: r.data, tipo: r.tipo, ore: r.ore, oreStraordinario: r.oreStraordinario || 0, totale: totale(r),
+        descrizione: r.descrizione ?? null, operaioId: r.operaioId, operaio: operai.get(r.operaioId)?.nomeCompleto ?? '?',
+        cantiereId: r.cantiereId ?? null, cantiere: r.cantiereId ? (cantieri.get(r.cantiereId)?.nome ?? '?') : null,
+        costo: costo(r),
+      };
+    }
+
+    // ======================= OPERAI =======================
+    function elencoOperai({ soloAttivi } = {}) {
+      const oggi = oggiISO();
+      const inizioMese = oggi.slice(0, 8) + '01';
+      const oreMese = new Map(gruppi(righe().filter((r) => isLavoro(r) && r.data >= inizioMese), (r) => r.operaioId).map(([k, g]) => [k, somma(g, totale)]));
+      const entro30 = addDays(oggi, 30);
+      const scad = new Map(gruppi(dati.scadenze.filter((s) => s.dataScadenza <= entro30), (s) => s.operaioId).map(([k, g]) => [k, g.length]));
+      return dati.operai
+        .filter((o) => String(soloAttivi) !== 'true' || o.attivo)
+        .sort((a, b) => confronta(a.cognome, b.cognome) || confronta(a.nome, b.nome))
+        .map((o) => ({ ...o, oreMese: oreMese.get(o.id) ?? 0, scadenzeInArrivo: scad.get(o.id) ?? 0 }));
+    }
+
+    const operaio = (id) => trovaOperaio(id);
+
+    function validaOperaio(o) {
+      const v = { ...o };
+      v.nome = pulisci(v.nome) ?? '';
+      v.cognome = pulisci(v.cognome) ?? '';
+      if (!v.nome || !v.cognome) errore('Nome e cognome sono obbligatori.');
+      v.costoOrario = numero(v.costoOrario) ?? 0;
+      if (v.costoOrario < 0) errore('Il costo orario non può essere negativo.');
+      v.costoOrarioStraordinario = numero(v.costoOrarioStraordinario) ?? 0;
+      if (v.costoOrarioStraordinario <= 0) v.costoOrarioStraordinario = arrot(v.costoOrario * 1.25);
+      v.codiceFiscale = pulisci(v.codiceFiscale)?.toUpperCase() ?? null;
+      for (const k of ['telefono', 'email', 'qualifica', 'note', 'dataAssunzione']) v[k] = pulisci(v[k]);
+      v.attivo = v.attivo !== false;
+      return pulito(v, 'oreMese', 'scadenzeInArrivo');
+    }
+
+    async function salvaOperaio(id, input) {
+      const v = validaOperaio(input);
+      id ??= nuovoId('operai');
+      await scrivi([{ tipo: 'set', coll: 'operai', id, dati: v }]);
+      return { ...v, id };
+    }
+
+    async function eliminaOperaio(id) {
+      trovaOperaio(id);
+      if (righe().some((r) => r.operaioId === id)) errore("L'operaio ha ore registrate e non può essere eliminato. Puoi disattivarlo dalla scheda.");
+      await scrivi([
+        ...dati.scadenze.filter((s) => s.operaioId === id).map((s) => ({ tipo: 'delete', coll: 'scadenze', id: s.id })),
+        { tipo: 'delete', coll: 'operai', id },
+      ]);
+    }
+
+    function riepilogoOperaio(id, { da, a } = {}) {
+      const o = trovaOperaio(id);
+      const cantieri = mappa(dati.cantieri);
+      const tutte = nelPeriodo(righe().filter((r) => r.operaioId === id), da, a);
+      const lavoro = tutte.filter(isLavoro);
+      const oggi = oggiISO();
+      return {
+        operaio: o,
+        totali: {
+          ore: somma(lavoro, (r) => r.ore), straordinario: somma(lavoro, (r) => r.oreStraordinario), totale: somma(lavoro, totale),
+          giorni: distinti(lavoro, (r) => r.data), cantieri: distinti(lavoro, (r) => r.cantiereId), costo: somma(lavoro, costo),
+          giorniAssenza: distinti(tutte.filter((r) => !isLavoro(r)), (r) => r.data),
+        },
+        perCantiere: gruppi(lavoro, (r) => r.cantiereId).map(([cid, g]) => {
+          const c = cantieri.get(cid);
+          return {
+            cantiereId: cid, cantiere: c?.nome ?? '?', stato: c?.stato ?? null,
+            ore: somma(g, (r) => r.ore), straordinario: somma(g, (r) => r.oreStraordinario), totale: somma(g, totale),
+            giorni: distinti(g, (r) => r.data), costo: somma(g, costo),
+            primoGiorno: min(g, (r) => r.data), ultimoGiorno: max(g, (r) => r.data),
+          };
+        }).sort((x, y) => y.totale - x.totale),
+        perMese: perMese(lavoro),
+        assenze: gruppi(tutte.filter((r) => !isLavoro(r)), (r) => r.tipo)
+          .map(([tipo, g]) => ({ tipo, giorni: distinti(g, (r) => r.data), ore: somma(g, totale) }))
+          .sort((x, y) => y.giorni - x.giorni),
+        scadenze: dati.scadenze.filter((s) => s.operaioId === id)
+          .sort((x, y) => confronta(x.dataScadenza, y.dataScadenza))
+          .map((s) => ({ ...s, giorniMancanti: giorniTra(oggi, s.dataScadenza) })),
+      };
+    }
+
+    // ======================= CANTIERI =======================
+    function elencoCantieri() {
+      const ore = new Map(gruppi(righe().filter((r) => isLavoro(r) && r.cantiereId), (r) => r.cantiereId).map(([k, g]) => [k, {
+        ore: somma(g, totale), costo: somma(g, costo), ultimo: max(g, (r) => r.data), operai: distinti(g, (r) => r.operaioId),
+      }]));
+      const spese = new Map(gruppi(dati.spese, (s) => s.cantiereId).map(([k, g]) => [k, somma(g, (s) => s.importo)]));
+      return [...dati.cantieri]
+        .sort((a, b) => STATI_CANTIERE.indexOf(a.stato) - STATI_CANTIERE.indexOf(b.stato) || confronta(a.nome, b.nome))
+        .map((c) => {
+          const x = ore.get(c.id) ?? { ore: 0, costo: 0, ultimo: null, operai: 0 };
+          const sp = spese.get(c.id) ?? 0;
+          return {
+            ...c, oreTotali: x.ore, costoManodopera: x.costo, spese: sp, costoTotale: x.costo + sp,
+            ultimaAttivita: x.ultimo, operaiCoinvolti: x.operai,
+          };
+        });
+    }
+
+    const cantiere = (id) => trovaCantiere(id);
+
+    function validaCantiere(c) {
+      const v = { ...c };
+      v.nome = pulisci(v.nome) ?? '';
+      if (!v.nome) errore('Il nome del cantiere è obbligatorio.');
+      if (!STATI_CANTIERE.includes(v.stato)) v.stato = 'Pianificato';
+      v.budget = numero(v.budget);
+      v.oreStimate = numero(v.oreStimate);
+      if (v.budget < 0) errore('Il budget non può essere negativo.');
+      if (v.oreStimate < 0) errore('Le ore stimate non possono essere negative.');
+      for (const k of ['codice', 'indirizzo', 'committente', 'responsabile', 'note', 'dataInizio', 'dataFinePrevista', 'dataFine']) v[k] = pulisci(v[k]);
+      if (v.dataInizio && v.dataFinePrevista && v.dataFinePrevista < v.dataInizio) errore("La data di fine prevista è precedente all'inizio.");
+      if (v.stato === 'Completato' && !v.dataFine) v.dataFine = oggiISO();
+      return pulito(v, 'oreTotali', 'costoManodopera', 'spese', 'costoTotale', 'ultimaAttivita', 'operaiCoinvolti');
+    }
+
+    async function salvaCantiere(id, input) {
+      const v = validaCantiere(input);
+      id ??= nuovoId('cantieri');
+      await scrivi([{ tipo: 'set', coll: 'cantieri', id, dati: v }]);
+      return { ...v, id };
+    }
+
+    async function eliminaCantiere(id) {
+      trovaCantiere(id);
+      if (righe().some((r) => r.cantiereId === id) || dati.spese.some((s) => s.cantiereId === id)) {
+        errore('Il cantiere ha ore o spese registrate e non può essere eliminato. Puoi impostarlo come Completato.');
+      }
+      await scrivi([{ tipo: 'delete', coll: 'cantieri', id }]);
+    }
+
+    function riepilogoCantiere(id, { da, a } = {}) {
+      const c = trovaCantiere(id);
+      const operai = mappa(dati.operai);
+      const tutte = nelPeriodo(righe().filter((r) => r.cantiereId === id), da, a);
+      const lavoro = tutte.filter(isLavoro);
+      const spese = nelPeriodo(dati.spese.filter((s) => s.cantiereId === id), da, a);
+      const costoManodopera = somma(lavoro, costo);
+      const totSpese = somma(spese, (s) => s.importo);
+      return {
+        cantiere: c,
+        totali: {
+          ore: somma(lavoro, (r) => r.ore), straordinario: somma(lavoro, (r) => r.oreStraordinario), totale: somma(lavoro, totale),
+          giorni: distinti(lavoro, (r) => r.data), operai: distinti(lavoro, (r) => r.operaioId),
+          costoManodopera, spese: totSpese, costoTotale: costoManodopera + totSpese,
+          oreFermoMaltempo: somma(tutte.filter((r) => r.tipo === 'Maltempo'), totale),
+          primoGiorno: lavoro.length ? min(lavoro, (r) => r.data) : null,
+          ultimoGiorno: lavoro.length ? max(lavoro, (r) => r.data) : null,
+        },
+        perOperaio: gruppi(lavoro, (r) => r.operaioId).map(([oid, g]) => {
+          const o = operai.get(oid);
+          return {
+            operaioId: oid, operaio: o?.nomeCompleto ?? '?', qualifica: o?.qualifica ?? null,
+            ore: somma(g, (r) => r.ore), straordinario: somma(g, (r) => r.oreStraordinario), totale: somma(g, totale),
+            giorni: distinti(g, (r) => r.data), costo: somma(g, costo),
+            primoGiorno: min(g, (r) => r.data), ultimoGiorno: max(g, (r) => r.data),
+          };
+        }).sort((x, y) => y.totale - x.totale),
+        perMese: perMese(lavoro),
+        speseCategoria: gruppi(spese, (s) => s.categoria)
+          .map(([categoria, g]) => ({ categoria, totale: somma(g, (s) => s.importo), numero: g.length }))
+          .sort((x, y) => y.totale - x.totale),
+      };
+    }
+
+    // ======================= REGISTRO ORE =======================
+    function elencoOre({ da, a, operaioId, cantiereId, tipo, limite } = {}) {
+      const operai = mappa(dati.operai);
+      const cantieri = mappa(dati.cantieri);
+      let q = nelPeriodo(righe(), da, a)
+        .filter((r) => !operaioId || r.operaioId === operaioId)
+        .filter((r) => !cantiereId || r.cantiereId === cantiereId)
+        .filter((r) => !tipo || r.tipo === tipo)
+        .sort((x, y) => confronta(y.data, x.data) || confronta(operai.get(x.operaioId)?.nomeCompleto, operai.get(y.operaioId)?.nomeCompleto));
+      if (Number(limite) > 0) q = q.slice(0, Number(limite));
+      return q.map((r) => vista(r, operai, cantieri));
+    }
+
+    const oreDelGiorno = ({ data }) => righe().filter((r) => r.data === data).map((r) => vista(r));
+
+    /** Valida e costruisce una riga del registro con il costo orario attuale dell'operaio. */
+    function costruisciRiga(inp, escludiId) {
+      const op = trovaOperaio(inp.operaioId);
+      const tipo = pulisci(inp.tipo) ?? 'Lavoro';
+      if (!TIPI_REGISTRO.includes(tipo)) errore(`Tipo non valido: ${tipo}`);
+      const data = inp.data;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(data ?? '')) errore('Data non valida.');
+      if (tipo === 'Lavoro' && !inp.cantiereId) errore('Per le ore di lavoro devi indicare il cantiere.');
+      if (inp.cantiereId) trovaCantiere(inp.cantiereId);
+      const ore = Number(inp.ore) || 0;
+      const str = Number(inp.oreStraordinario) || 0;
+      if (ore < 0 || str < 0) errore('Le ore non possono essere negative.');
+      if (ore + str <= 0) errore("Indica almeno un'ora.");
+      if (tipo !== 'Lavoro' && str > 0) errore('Lo straordinario si registra solo sulle ore di lavoro.');
+      const gia = somma(righe().filter((r) => r.operaioId === inp.operaioId && r.data === data && r.id !== escludiId), totale);
+      if (gia + ore + str > MAX_ORE_GIORNO) {
+        if (gia === 0) errore(`Massimo ${MAX_ORE_GIORNO} h al giorno per operaio.`);
+        errore(`${op.nomeCompleto} ha già ${gia} h registrate il ${parseISO(data).toLocaleDateString('it-IT')}: il totale supererebbe le ${MAX_ORE_GIORNO} h.`);
+      }
+      return {
+        operaioId: inp.operaioId, cantiereId: inp.cantiereId || null, tipo, ore, oreStraordinario: str,
+        descrizione: pulisci(inp.descrizione),
+        costoOrario: op.costoOrario ?? 0, costoOrarioStraordinario: op.costoOrarioStraordinario ?? 0,
+        creatoIl: new Date().toISOString(), creatoDa: dati.utente?.email ?? null,
+      };
+    }
+
+    const opRiga = (data, id, valore) => ({ tipo: 'merge', coll: 'giorni', id: data, dati: { righe: { [id]: valore } } });
+
+    async function nuovaRegistrazione(inp) {
+      const r = costruisciRiga(inp, null);
+      const id = nuovoId('righe');
+      await scrivi([opRiga(inp.data, id, r)]);
+      return vista({ ...r, id, data: inp.data });
+    }
+
+    async function modificaRegistrazione(id, inp) {
+      const vecchia = righe().find((r) => r.id === id) ?? errore('Registrazione non trovata');
+      const r = costruisciRiga(inp, id);
+      r.creatoIl = vecchia.creatoIl ?? r.creatoIl;
+      r.creatoDa = vecchia.creatoDa ?? r.creatoDa;
+      r.modificatoIl = new Date().toISOString();
+      if (vecchia.operaioId === r.operaioId) { // mantiene il costo storico
+        r.costoOrario = vecchia.costoOrario;
+        r.costoOrarioStraordinario = vecchia.costoOrarioStraordinario;
+      }
+      const ops = [];
+      if (vecchia.data !== inp.data) ops.push(opRiga(vecchia.data, id, CAMPO_ELIMINATO));
+      ops.push(opRiga(inp.data, id, r));
+      await scrivi(ops);
+      return vista({ ...r, id, data: inp.data });
+    }
+
+    async function eliminaRegistrazione(id) {
+      const r = righe().find((x) => x.id === id) ?? errore('Registrazione non trovata');
+      await scrivi([opRiga(r.data, id, CAMPO_ELIMINATO)]);
+    }
+
+    /** Rapportino: ore di più operai per un cantiere e una data. Ore = 0 elimina la riga esistente. */
+    async function salvaRapportino({ data, cantiereId, righe: input }) {
+      trovaCantiere(cantiereId);
+      if (!input?.length) errore('Nessun operaio nel rapportino.');
+      if (new Set(input.map((r) => r.operaioId)).size !== input.length) errore('Lo stesso operaio compare più volte nel rapportino.');
+
+      const modifiche = {};
+      let salvate = 0, eliminate = 0;
+      for (const riga of input) {
+        const esistente = righe().find((r) => isLavoro(r) && r.operaioId === riga.operaioId && r.cantiereId === cantiereId && r.data === data);
+        if ((Number(riga.ore) || 0) + (Number(riga.oreStraordinario) || 0) <= 0) {
+          if (esistente) { modifiche[esistente.id] = CAMPO_ELIMINATO; eliminate++; }
+          continue;
+        }
+        const nuova = costruisciRiga({ ...riga, data, cantiereId, tipo: 'Lavoro' }, esistente?.id);
+        if (esistente) {
+          nuova.creatoIl = esistente.creatoIl ?? nuova.creatoIl;
+          nuova.creatoDa = esistente.creatoDa ?? nuova.creatoDa;
+          nuova.costoOrario = esistente.costoOrario;
+          nuova.costoOrarioStraordinario = esistente.costoOrarioStraordinario;
+          nuova.modificatoIl = new Date().toISOString();
+        }
+        modifiche[esistente?.id ?? nuovoId('righe')] = nuova;
+        salvate++;
+      }
+      // un'unica scrittura "merge" sul documento del giorno: non tocca le righe di altri cantieri
+      await scrivi([{ tipo: 'merge', coll: 'giorni', id: data, dati: { righe: modifiche } }]);
+      return { salvate, eliminate };
+    }
+
+    // ======================= SPESE e SCADENZE =======================
+    function elencoSpese({ cantiereId, da, a, categoria } = {}) {
+      const cantieri = mappa(dati.cantieri);
+      return nelPeriodo(dati.spese, da, a)
+        .filter((s) => !cantiereId || s.cantiereId === cantiereId)
+        .filter((s) => !categoria || s.categoria === categoria)
+        .sort((x, y) => confronta(y.data, x.data))
+        .map((s) => ({ ...s, cantiere: cantieri.get(s.cantiereId)?.nome ?? '?' }));
+    }
+
+    async function salvaSpesa(id, input) {
+      const v = { ...input };
+      trovaCantiere(v.cantiereId);
+      v.descrizione = pulisci(v.descrizione) ?? errore('La descrizione è obbligatoria.');
+      v.importo = numero(v.importo);
+      if (!v.importo) errore("Indica l'importo.");
+      if (!v.data) errore('Indica la data.');
+      v.categoria = pulisci(v.categoria) ?? 'Altro';
+      v.fornitore = pulisci(v.fornitore);
+      v.numeroDocumento = pulisci(v.numeroDocumento);
+      id ??= nuovoId('spese');
+      const d = pulito(v, 'cantiere');
+      await scrivi([{ tipo: 'set', coll: 'spese', id, dati: d }]);
+      return { ...d, id };
+    }
+
+    const eliminaSpesa = (id) => scrivi([{ tipo: 'delete', coll: 'spese', id }]);
+
+    function elencoScadenze({ operaioId, entroGiorni } = {}) {
+      const oggi = oggiISO();
+      const operai = mappa(dati.operai);
+      return dati.scadenze
+        .filter((s) => !operaioId || s.operaioId === operaioId)
+        .filter((s) => entroGiorni === undefined || entroGiorni === '' || s.dataScadenza <= addDays(oggi, Number(entroGiorni)))
+        .filter((s) => operaioId || operai.get(s.operaioId)?.attivo)
+        .sort((x, y) => confronta(x.dataScadenza, y.dataScadenza))
+        .map((s) => ({ ...s, operaio: operai.get(s.operaioId)?.nomeCompleto ?? '?', giorniMancanti: giorniTra(oggi, s.dataScadenza) }));
+    }
+
+    async function salvaScadenza(id, input) {
+      const v = { ...input };
+      trovaOperaio(v.operaioId);
+      v.tipo = pulisci(v.tipo) ?? errore('Indica il tipo di documento.');
+      if (!v.dataScadenza) errore('Indica la data di scadenza.');
+      v.dataRilascio = pulisci(v.dataRilascio);
+      v.note = pulisci(v.note);
+      id ??= nuovoId('scadenze');
+      const d = pulito(v, 'operaio', 'giorniMancanti');
+      await scrivi([{ tipo: 'set', coll: 'scadenze', id, dati: d }]);
+      return { ...d, id };
+    }
+
+    const eliminaScadenza = (id) => scrivi([{ tipo: 'delete', coll: 'scadenze', id }]);
+
+    // ======================= DASHBOARD e REPORT =======================
+    function calcolaDashboard() {
+      const oggi = oggiISO();
+      const inizioMese = oggi.slice(0, 8) + '01';
+      const dOggi = parseISO(oggi);
+      const inizioPrec = new Date(dOggi.getFullYear(), dOggi.getMonth() - 1, 1);
+      const giorniPrec = new Date(dOggi.getFullYear(), dOggi.getMonth(), 0).getDate();
+      const finePrec = new Date(inizioPrec.getFullYear(), inizioPrec.getMonth(), Math.min(dOggi.getDate(), giorniPrec));
+      const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+      const operai = mappa(dati.operai);
+      const cantieri = mappa(dati.cantieri);
+      const tutte = righe();
+      const lavoro = tutte.filter(isLavoro);
+      const mese = lavoro.filter((r) => r.data >= inizioMese && r.data <= oggi);
+      const mesePrec = lavoro.filter((r) => r.data >= iso(inizioPrec) && r.data <= iso(finePrec));
+      const attivi = dati.operai.filter((o) => o.attivo);
+      const registratiOggi = new Set(tutte.filter((r) => r.data === oggi).map((r) => r.operaioId));
+      const inizio30 = addDays(oggi, -29);
+      const perGiorno = new Map(gruppi(lavoro.filter((r) => r.data >= inizio30 && r.data <= oggi), (r) => r.data).map(([k, g]) => [k, somma(g, totale)]));
+      const oreCant = new Map(gruppi(lavoro.filter((r) => r.cantiereId), (r) => r.cantiereId).map(([k, g]) => [k, { ore: somma(g, totale), costo: somma(g, costo) }]));
+      const speseCant = new Map(gruppi(dati.spese, (s) => s.cantiereId).map(([k, g]) => [k, somma(g, (s) => s.importo)]));
+      const settimana = addDays(oggi, -6);
+      const oreSett = new Map(gruppi(lavoro.filter((r) => r.data >= settimana && r.cantiereId), (r) => r.cantiereId).map(([k, g]) => [k, somma(g, totale)]));
+      const entro30 = addDays(oggi, 30);
+
+      return {
+        oggi,
+        conteggi: {
+          operaiAttivi: attivi.length, cantieriInCorso: dati.cantieri.filter((c) => c.stato === 'In corso').length,
+          cantieriTotali: dati.cantieri.length, operaiTotali: dati.operai.length,
+        },
+        mese: {
+          ore: somma(mese, (r) => r.ore), straordinario: somma(mese, (r) => r.oreStraordinario), totale: somma(mese, totale),
+          costoManodopera: somma(mese, costo),
+          spese: somma(dati.spese.filter((s) => s.data >= inizioMese && s.data <= oggi), (s) => s.importo),
+          totaleMesePrecedente: somma(mesePrec, totale),
+        },
+        oggiPresenze: {
+          registrati: attivi.filter((o) => registratiOggi.has(o.id)).length,
+          mancanti: attivi.filter((o) => !registratiOggi.has(o.id)).sort((a, b) => confronta(a.cognome, b.cognome)),
+        },
+        ultimi30: Array.from({ length: 30 }, (_, i) => addDays(inizio30, i)).map((d) => ({ data: d, ore: perGiorno.get(d) ?? 0 })),
+        cantieriInCorso: dati.cantieri.filter((c) => c.stato === 'In corso').sort((a, b) => confronta(a.nome, b.nome)).map((c) => {
+          const x = oreCant.get(c.id) ?? { ore: 0, costo: 0 };
+          return { ...c, ore: x.ore, costoTotale: x.costo + (speseCant.get(c.id) ?? 0), oreUltimaSettimana: oreSett.get(c.id) ?? 0 };
+        }),
+        scadenze: dati.scadenze.filter((s) => s.dataScadenza <= entro30 && operai.get(s.operaioId)?.attivo)
+          .sort((x, y) => confronta(x.dataScadenza, y.dataScadenza))
+          .map((s) => ({ ...s, operaio: operai.get(s.operaioId).nomeCompleto, giorniMancanti: giorniTra(oggi, s.dataScadenza) })),
+        ultime: [...tutte].sort((x, y) => confronta(y.modificatoIl ?? y.creatoIl, x.modificatoIl ?? x.creatoIl)).slice(0, 8).map((r) => vista(r, operai, cantieri)),
+      };
+    }
+
+    function reportMatrice({ da, a } = {}) {
+      const operai = mappa(dati.operai);
+      const cantieriM = mappa(dati.cantieri);
+      const lavoro = nelPeriodo(righe().filter((r) => isLavoro(r) && r.cantiereId), da, a);
+      return {
+        cantieri: [...new Set(lavoro.map((r) => r.cantiereId))].map((id) => ({ id, nome: cantieriM.get(id)?.nome ?? '?' }))
+          .sort((x, y) => confronta(x.nome, y.nome)),
+        righe: gruppi(lavoro, (r) => r.operaioId).map(([oid, g]) => ({
+          operaioId: oid, operaio: operai.get(oid)?.nomeCompleto ?? '?',
+          celle: Object.fromEntries(gruppi(g, (r) => r.cantiereId).map(([k, x]) => [k, somma(x, totale)])),
+          straordinario: somma(g, (r) => r.oreStraordinario), totale: somma(g, totale), costo: somma(g, costo),
+        })).sort((x, y) => confronta(x.operaio, y.operaio)),
+        totaliColonne: Object.fromEntries(gruppi(lavoro, (r) => r.cantiereId).map(([k, g]) => [k, somma(g, totale)])),
+        totale: somma(lavoro, totale),
+        costo: somma(lavoro, costo),
+      };
+    }
+
+    function reportMensile({ anno, mese }) {
+      anno = Number(anno); mese = Number(mese);
+      if (!(mese >= 1 && mese <= 12)) errore('Mese non valido');
+      const giorniNelMese = new Date(anno, mese, 0).getDate();
+      const da = `${anno}-${String(mese).padStart(2, '0')}-01`;
+      const a = `${anno}-${String(mese).padStart(2, '0')}-${giorniNelMese}`;
+      const cantieri = mappa(dati.cantieri);
+      const tutte = nelPeriodo(righe(), da, a);
+      const ids = new Set(tutte.map((r) => r.operaioId));
+      const operai = dati.operai.filter((o) => o.attivo || ids.has(o.id))
+        .sort((x, y) => confronta(x.cognome, y.cognome) || confronta(x.nome, y.nome));
+      return {
+        anno, mese, giorniNelMese,
+        righe: operai.map((o) => {
+          const mie = tutte.filter((r) => r.operaioId === o.id);
+          const lav = mie.filter(isLavoro);
+          return {
+            operaioId: o.id, operaio: o.nomeCompleto, qualifica: o.qualifica ?? null,
+            giorni: Object.fromEntries(gruppi(mie, (r) => Number(r.data.slice(8))).map(([g, x]) => [g, {
+              ore: somma(x.filter(isLavoro), (r) => r.ore),
+              straordinario: somma(x.filter(isLavoro), (r) => r.oreStraordinario),
+              assenze: x.filter((r) => !isLavoro(r)).map((r) => ({ tipo: r.tipo, ore: totale(r) })),
+              cantieri: [...new Set(x.filter((r) => r.cantiereId).map((r) => cantieri.get(r.cantiereId)?.nome ?? '?'))],
+            }])),
+            ore: somma(lav, (r) => r.ore), straordinario: somma(lav, (r) => r.oreStraordinario),
+            giorniLavorati: distinti(lav, (r) => r.data),
+            assenze: Object.fromEntries(gruppi(mie.filter((r) => !isLavoro(r)), (r) => r.tipo)
+              .map(([t, x]) => [t, { giorni: distinti(x, (r) => r.data), ore: somma(x, totale) }])),
+          };
+        }),
+      };
+    }
+
+    function reportCosti({ da, a } = {}) {
+      const lavoro = new Map(gruppi(nelPeriodo(righe().filter((r) => isLavoro(r) && r.cantiereId), da, a), (r) => r.cantiereId)
+        .map(([k, g]) => [k, { ore: somma(g, totale), costo: somma(g, costo), operai: distinti(g, (r) => r.operaioId) }]));
+      const spese = new Map(gruppi(nelPeriodo(dati.spese, da, a), (s) => s.cantiereId)
+        .map(([k, g]) => [k, Object.fromEntries(gruppi(g, (s) => s.categoria).map(([cat, x]) => [cat, somma(x, (s) => s.importo)]))]));
+      return dati.cantieri.filter((c) => lavoro.has(c.id) || spese.has(c.id))
+        .sort((x, y) => confronta(x.nome, y.nome))
+        .map((c) => {
+          const l = lavoro.get(c.id) ?? { ore: 0, costo: 0, operai: 0 };
+          const sp = spese.get(c.id) ?? {};
+          const totSpese = Object.values(sp).reduce((s, v) => s + v, 0);
+          return {
+            id: c.id, nome: c.nome, stato: c.stato, budget: c.budget ?? null, ore: l.ore, operai: l.operai,
+            costoManodopera: l.costo, spesePerCategoria: sp, spese: totSpese, costoTotale: l.costo + totSpese,
+          };
+        });
+    }
+
+    // ======================= SISTEMA =======================
+    function elenchi() {
+      const unici = (...liste) => [...new Set(liste.flat().filter(Boolean))];
+      return {
+        statiCantiere: STATI_CANTIERE,
+        tipiRegistro: TIPI_REGISTRO,
+        categorieSpesa: unici(CATEGORIE_SPESA, dati.spese.map((s) => s.categoria)),
+        tipiDocumento: unici(TIPI_DOCUMENTO, dati.scadenze.map((s) => s.tipo)),
+        qualifiche: unici(QUALIFICHE, dati.operai.map((o) => o.qualifica)),
+        fornitori: unici(dati.spese.map((s) => s.fornitore)).sort(confronta),
+      };
+    }
+
+    function info() {
+      return {
+        conteggi: {
+          operai: dati.operai.length, cantieri: dati.cantieri.length, ore: righe().length,
+          giorni: dati.giorni.length, spese: dati.spese.length, scadenze: dati.scadenze.length,
+        },
+      };
+    }
+
+    const COLLEZIONI = ['operai', 'cantieri', 'giorni', 'spese', 'scadenze'];
+    /** Tutti i dati in un oggetto JSON (per il backup). */
+    function esporta() {
+      const out = { app: 'Il Mio Cantiere', versione: 2, esportatoIl: new Date().toISOString() };
+      for (const c of COLLEZIONI) out[c] = dati[c].map(({ nomeCompleto, ...resto }) => resto); // eslint-disable-line no-unused-vars
+      return out;
+    }
+
+    // =====================================================================
+    //  FINESTRE DI INSERIMENTO / MODIFICA
+    // =====================================================================
+
+
+    async function formOperaio(op, dopo) {
+      const el = await elenchi();
+      formModal({
+        titolo: op ? 'Modifica operaio' : 'Nuovo operaio',
+        valori: op ?? { attivo: true },
+        campi: [
+          { name: 'nome', label: 'Nome', required: true },
+          { name: 'cognome', label: 'Cognome', required: true },
+          { name: 'qualifica', label: 'Qualifica', list: el.qualifiche },
+          { name: 'telefono', label: 'Telefono', type: 'tel' },
+          { name: 'costoOrario', label: 'Costo orario aziendale (€)', type: 'number', step: '0.01', min: 0, required: true, help: 'Costo totale per l’impresa, contributi inclusi' },
+          { name: 'costoOrarioStraordinario', label: 'Costo orario straordinario (€)', type: 'number', step: '0.01', min: 0, help: 'Vuoto = +25% sul costo orario' },
+          { name: 'codiceFiscale', label: 'Codice fiscale' },
+          { name: 'email', label: 'Email', type: 'email' },
+          { name: 'dataAssunzione', label: 'Data assunzione', type: 'date' },
+          { name: 'attivo', label: 'Operaio attivo (compare nei rapportini)', type: 'checkbox' },
+          { name: 'note', label: 'Note', type: 'textarea', full: true },
+        ],
+        async salva(v) {
+          v.costoOrarioStraordinario ??= 0;
+          const r = op ? await salvaOperaio(op.id, v) : await salvaOperaio(null, v);
+          toast(op ? 'Operaio aggiornato' : 'Operaio aggiunto');
+          elenchi(true);
+          dopo?.(r);
+        },
+        elimina: op ? async () => { await eliminaOperaio(op.id); toast('Operaio eliminato'); location.hash = '#/operai'; } : null,
+      });
+    }
+
+    async function formCantiere(c, dopo) {
+      const el = await elenchi();
+      formModal({
+        titolo: c ? 'Modifica cantiere' : 'Nuovo cantiere',
+        valori: c ?? { stato: 'In corso', dataInizio: oggiISO() },
+        campi: [
+          { name: 'nome', label: 'Nome cantiere', required: true, full: true, placeholder: 'es. Ristrutturazione Villa Rossi' },
+          { name: 'codice', label: 'Codice / commessa', placeholder: 'es. C-2026-031' },
+          { name: 'stato', label: 'Stato', type: 'select', options: el.statiCantiere },
+          { name: 'committente', label: 'Committente' },
+          { name: 'responsabile', label: 'Responsabile / capocantiere' },
+          { name: 'indirizzo', label: 'Indirizzo', full: true },
+          { name: 'dataInizio', label: 'Data inizio', type: 'date' },
+          { name: 'dataFinePrevista', label: 'Fine prevista', type: 'date' },
+          { name: 'budget', label: 'Budget (€)', type: 'number', step: '0.01', min: 0, help: 'Per controllare i costi' },
+          { name: 'oreStimate', label: 'Ore stimate', type: 'number', step: '0.5', min: 0, help: 'Ore di manodopera previste' },
+          { name: 'dataFine', label: 'Data fine effettiva', type: 'date' },
+          { name: 'note', label: 'Note', type: 'textarea', full: true },
+        ],
+        async salva(v) {
+          const r = c ? await salvaCantiere(c.id, v) : await salvaCantiere(null, v);
+          toast(c ? 'Cantiere aggiornato' : 'Cantiere creato');
+          dopo?.(r);
+        },
+        elimina: c ? async () => { await eliminaCantiere(c.id); toast('Cantiere eliminato'); location.hash = '#/cantieri'; } : null,
+      });
+    }
+
+    // Registrazione singola (ore su un cantiere oppure assenza)
+    async function formRegistro(r, dopo, predefiniti = {}) {
+      const [el, operai, cantieri] = await Promise.all([elenchi(), elencoOperai(), elencoCantieri()]);
+      const opOperai = operai.filter((o) => o.attivo || o.id === r?.operaioId).map((o) => ({ value: o.id, label: o.nomeCompleto }));
+      const opCantieri = cantieri.filter((c) => c.stato !== 'Completato' || c.id === r?.cantiereId).map((c) => ({ value: c.id, label: c.nome }));
+      formModal({
+        titolo: r ? 'Modifica registrazione' : 'Nuova registrazione',
+        valori: r ?? { data: oggiISO(), tipo: 'Lavoro', ore: 8, oreStraordinario: 0, ...predefiniti },
+        campi: [
+          { name: 'operaioId', label: 'Operaio', type: 'select', options: opOperai, required: true, vuoto: '— scegli —' },
+          { name: 'data', label: 'Data', type: 'date', required: true },
+          { name: 'tipo', label: 'Tipo', type: 'select', options: el.tipiRegistro },
+          { name: 'cantiereId', label: 'Cantiere', type: 'select', options: opCantieri, vuoto: '— nessuno —', help: 'Obbligatorio per le ore di lavoro' },
+          { name: 'ore', label: 'Ore', type: 'number', step: '0.5', min: 0, max: 24, required: true },
+          { name: 'oreStraordinario', label: 'Ore straordinario', type: 'number', step: '0.5', min: 0, max: 24 },
+          { name: 'descrizione', label: 'Lavorazione / note', type: 'textarea', full: true },
+        ],
+        onMount(form) {
+          const aggiorna = () => {
+            const lavoro = form.elements.tipo.value === 'Lavoro';
+            form.elements.oreStraordinario.disabled = !lavoro;
+            if (!lavoro) form.elements.oreStraordinario.value = 0;
+          };
+          form.elements.tipo.addEventListener('change', aggiorna);
+          aggiorna();
+        },
+        async salva(v) {
+          v.cantiereId = v.cantiereId || null;
+          v.oreStraordinario ??= 0;
+          const res = r ? await modificaRegistrazione(r.id, v) : await nuovaRegistrazione(v);
+          toast(r ? 'Registrazione aggiornata' : 'Registrazione salvata');
+          dopo?.(res);
+        },
+        elimina: r ? async () => { await eliminaRegistrazione(r.id); toast('Registrazione eliminata'); dopo?.(); } : null,
+      });
+    }
+
+    async function formSpesa(s, dopo, predefiniti = {}) {
+      const [el, cantieri] = await Promise.all([elenchi(), elencoCantieri()]);
+      formModal({
+        titolo: s ? 'Modifica spesa' : 'Nuova spesa',
+        valori: s ?? { data: oggiISO(), categoria: 'Materiali', ...predefiniti },
+        campi: [
+          { name: 'cantiereId', label: 'Cantiere', type: 'select', required: true, vuoto: '— scegli —',
+            options: cantieri.filter((c) => c.stato !== 'Completato' || c.id === (s?.cantiereId ?? predefiniti.cantiereId)).map((c) => ({ value: c.id, label: c.nome })) },
+          { name: 'data', label: 'Data', type: 'date', required: true },
+          { name: 'categoria', label: 'Categoria', type: 'select', options: el.categorieSpesa },
+          { name: 'importo', label: 'Importo (€)', type: 'number', step: '0.01', required: true, help: 'IVA esclusa' },
+          { name: 'descrizione', label: 'Descrizione', required: true, full: true },
+          { name: 'fornitore', label: 'Fornitore', list: el.fornitori },
+          { name: 'numeroDocumento', label: 'N. fattura / DDT' },
+        ],
+        async salva(v) {
+          const r = s ? await salvaSpesa(s.id, v) : await salvaSpesa(null, v);
+          toast(s ? 'Spesa aggiornata' : 'Spesa registrata');
+          elenchi(true);
+          dopo?.(r);
+        },
+        elimina: s ? async () => { await eliminaSpesa(s.id); toast('Spesa eliminata'); dopo?.(); } : null,
+      });
+    }
+
+    async function formScadenza(s, operaioId, dopo) {
+      const el = await elenchi();
+      formModal({
+        titolo: s ? 'Modifica documento' : 'Nuovo documento / attestato',
+        valori: s ?? {},
+        campi: [
+          { name: 'tipo', label: 'Tipo documento', required: true, list: el.tipiDocumento, full: true, placeholder: 'es. Visita medica' },
+          { name: 'dataRilascio', label: 'Data rilascio', type: 'date' },
+          { name: 'dataScadenza', label: 'Data scadenza', type: 'date', required: true },
+          { name: 'note', label: 'Note', type: 'textarea', full: true },
+        ],
+        async salva(v) {
+          v.operaioId = operaioId;
+          const r = s ? await salvaScadenza(s.id, v) : await salvaScadenza(null, v);
+          toast('Documento salvato');
+          elenchi(true);
+          dopo?.(r);
+        },
+        elimina: s ? async () => { await eliminaScadenza(s.id); toast('Documento eliminato'); dopo?.(); } : null,
+      });
+    }
+
+    // =====================================================================
+    //  PAGINE (ognuna è una funzione render(el, parametri))
+    // =====================================================================
+
+    // ---------- Panoramica ----------
+    const paginaPanoramica = (() => {
+      async function render(el) {
+        const d = await calcolaDashboard();
+
+        if (d.conteggi.operaiTotali === 0 && d.conteggi.cantieriTotali === 0) return benvenuto(el);
+
+        const delta = d.mese.totaleMesePrecedente
+          ? Math.round(((d.mese.totale - d.mese.totaleMesePrecedente) / d.mese.totaleMesePrecedente) * 100)
+          : null;
+        const meseNome = parseISO(d.oggi).toLocaleDateString('it-IT', { month: 'long' });
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Panoramica</h1><p class="sub" style="text-transform:capitalize">${esc(dataLunga(d.oggi))}</p></div>
+            <div class="actions"><a class="btn primary" href="#/ore">+ Rapportino di oggi</a></div>
+          </div>
+
+          <section class="kpis">
+            <div class="kpi accent"><div class="lbl">Ore lavorate a ${esc(meseNome)}</div>
+              <div class="val">${num(d.mese.totale)}<small>h</small></div>
+              <div class="foot">${delta === null ? `${num(d.mese.straordinario)} h di straordinario`
+                : `${delta >= 0 ? '▲' : '▼'} ${Math.abs(delta)}% sullo stesso periodo del mese scorso`}</div></div>
+            <div class="kpi"><div class="lbl">Costo manodopera del mese</div><div class="val">${euro0(d.mese.costoManodopera)}</div>
+              <div class="foot">+ ${euro0(d.mese.spese)} di spese</div></div>
+            <div class="kpi"><div class="lbl">Cantieri in corso</div><div class="val">${d.conteggi.cantieriInCorso}</div>
+              <div class="foot">${d.conteggi.cantieriTotali} in archivio</div></div>
+            <div class="kpi"><div class="lbl">Presenze registrate oggi</div><div class="val">${d.oggiPresenze.registrati}<small>/ ${d.conteggi.operaiAttivi}</small></div>
+              <div class="foot">operai attivi</div></div>
+          </section>
+
+          <div class="grid-3-2">
+            <section class="card">
+              <div class="card-head"><h2>Ore lavorate, ultimi 30 giorni</h2><span class="hint">tutti i cantieri</span></div>
+              ${barre(d.ultimi30.map((g) => {
+                const dt = parseISO(g.data);
+                return { label: String(dt.getDate()), titolo: data(g.data), valore: g.ore, weekend: dt.getDay() === 0 || dt.getDay() === 6 };
+              }), { formato: ore })}
+            </section>
+            <section class="card">
+              <div class="card-head"><h2>Senza ore registrate oggi</h2><a class="btn sm" href="#/ore">Rapportino</a></div>
+              ${d.oggiPresenze.mancanti.length
+                ? `<div class="list">${d.oggiPresenze.mancanti.slice(0, 8).map((o) => `
+                    <div class="list-item"><div class="t"><b><a class="link" href="#/operai/${o.id}">${esc(o.nomeCompleto)}</a></b><span>${esc(o.qualifica ?? '')}</span></div></div>`).join('')}
+                   ${d.oggiPresenze.mancanti.length > 8 ? `<div class="muted" style="padding-top:8px">e altri ${d.oggiPresenze.mancanti.length - 8}…</div>` : ''}</div>`
+                : '<div class="empty">Tutti gli operai attivi hanno ore registrate oggi.</div>'}
+            </section>
+          </div>
+
+          <section class="card flush mt">
+            <div class="card-head"><h2>Cantieri in corso</h2><a class="btn sm ghost" href="#/cantieri">Tutti i cantieri →</a></div>
+            ${d.cantieriInCorso.length ? `<div class="table-wrap"><table>
+              <thead><tr><th>Cantiere</th><th class="n">Ore totali</th><th class="n hide-sm">Ultimi 7 gg</th><th>Costi / budget</th><th class="hide-sm">Fine prevista</th></tr></thead>
+              <tbody>${d.cantieriInCorso.map((c) => `<tr>
+                <td><a class="link" href="#/cantieri/${c.id}">${esc(c.nome)}</a><div class="muted">${esc(c.committente ?? '')}</div></td>
+                <td class="n">${ore(c.ore)}${c.oreStimate ? `<div class="muted">su ${num(c.oreStimate)} stimate</div>` : ''}</td>
+                <td class="n hide-sm">${ore(c.oreUltimaSettimana)}</td>
+                <td>${progresso(c.costoTotale, c.budget)}</td>
+                <td class="hide-sm">${data(c.dataFinePrevista)}</td></tr>`).join('')}</tbody></table></div>`
+              : '<div class="empty">Nessun cantiere in corso</div>'}
+          </section>
+
+          <div class="grid-2 mt">
+            <section class="card">
+              <div class="card-head"><h2>Documenti in scadenza</h2><span class="hint">entro 30 giorni</span></div>
+              ${d.scadenze.length ? `<div class="list">${d.scadenze.map((s) => `
+                <div class="list-item"><div class="t"><b><a class="link" href="#/operai/${s.operaioId}">${esc(s.operaio)}</a></b>
+                  <span>${esc(s.tipo)} · ${data(s.dataScadenza)}</span></div>${badgeScadenza(s.giorniMancanti)}</div>`).join('')}</div>`
+                : '<div class="empty">Nessun documento in scadenza</div>'}
+            </section>
+            <section class="card">
+              <div class="card-head"><h2>Ultime registrazioni</h2><a class="btn sm ghost" href="#/ore">Registro →</a></div>
+              ${d.ultime.length ? `<div class="list">${d.ultime.map((r) => `
+                <div class="list-item"><div class="t"><b>${esc(r.operaio)} ${badgeTipo(r.tipo)}</b>
+                  <span>${data(r.data)}${r.cantiere ? ' · ' + esc(r.cantiere) : ''}</span></div>
+                  <b class="num">${ore(r.totale)}</b></div>`).join('')}</div>`
+                : '<div class="empty">Ancora nessuna registrazione</div>'}
+            </section>
+          </div>`;
+      }
+
+      function benvenuto(el) {
+        el.innerHTML = `
+          <div class="page-head"><div><h1>Benvenuto</h1></div></div>
+          <section class="card welcome">
+            <h2>Iniziamo a organizzare i cantieri</h2>
+            <p>Aggiungi i tuoi operai e i cantieri aperti, poi registra le ore ogni giorno con il rapportino.
+              Riepiloghi, costi e fogli presenze si calcolano da soli.</p>
+            <div class="actions">
+              <button class="btn primary" data-a="cantiere">+ Nuovo cantiere</button>
+              <button class="btn" data-a="operaio">+ Nuovo operaio</button>
+            </div>
+          </section>`;
+        const ricarica = () => window.dispatchEvent(new Event('ricarica'));
+        el.querySelector('[data-a=cantiere]').onclick = () => formCantiere(null, ricarica);
+        el.querySelector('[data-a=operaio]').onclick = () => formOperaio(null, ricarica);
+      }
+      return render;
+    })();
+
+    // ---------- Registro ore ----------
+    const paginaRegistro = (() => {
+      const stato = { data: oggiISO(), cantiereId: null, filtri: { operaioId: '', cantiereId: '', tipo: '' } };
+
+      async function render(el, params) {
+        if (params.cantiere) stato.cantiereId = params.cantiere;
+        const [operai, cantieri, el2] = await Promise.all([elencoOperai(), elencoCantieri(), elenchi()]);
+        const aperti = cantieri.filter((c) => c.stato !== 'Completato');
+        if (!stato.cantiereId || !cantieri.some((c) => c.id === stato.cantiereId)) stato.cantiereId = aperti[0]?.id ?? null;
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Registro ore</h1><p class="sub">Rapportino giornaliero per cantiere, assenze e storico delle registrazioni</p></div>
+            <div class="actions"><button class="btn" id="singola">+ Assenza / registrazione singola</button>
+              <button class="btn ghost solo-mobile solo-capo" data-esci>Esci</button></div>
+          </div>
+
+          <section class="card" id="rap">
+            <div class="card-head"><h2>Rapportino giornaliero</h2><span class="hint" id="rapInfo"></span></div>
+            ${aperti.length && operai.some((o) => o.attivo) ? `
+            <div class="rap-head">
+              <label class="f">Data<input type="date" id="rData" value="${stato.data}" max="${addDays(oggiISO(), 7)}"></label>
+              <label class="f">Cantiere<select id="rCant">${cantieri.filter((c) => c.stato !== 'Completato' || c.id === stato.cantiereId)
+                .map((c) => `<option value="${c.id}" ${c.id === stato.cantiereId ? 'selected' : ''}>${esc(c.nome)}</option>`).join('')}</select></label>
+            </div>
+            <label class="f" style="margin-bottom:14px">Lavorazioni eseguite (vale per tutti, se non scrivi una nota sulla riga)
+              <input id="rDescr" placeholder="es. Getto solaio piano primo, posa ferri…"></label>
+            <div id="rapTab"></div>
+            <div class="rap-tools">
+              <div class="actions">
+                <button class="btn sm" id="tutti">Seleziona tutti</button>
+                <button class="btn sm" id="nessuno">Nessuno</button>
+                <button class="btn sm ghost" id="oreTutti">Imposta 8 h a tutti</button>
+              </div>
+              <div class="actions"><span class="rap-tot" id="rapTot"></span><button class="btn primary" id="salvaRap">Salva rapportino</button></div>
+            </div>` : `<div class="empty">Per compilare il rapportino servono almeno un cantiere aperto e un operaio attivo.
+                <br><br><a class="btn" href="#/cantieri">Vai ai cantieri</a> <a class="btn" href="#/operai">Vai agli operai</a></div>`}
+          </section>
+
+          <section class="card flush mt" id="storico">
+            <div class="card-head"><h2>Registrazioni</h2>${periodoHTML()}</div>
+            <div style="padding:14px 18px 0">
+              <div class="filters">
+                <label class="f">Operaio<select id="fOp"><option value="">Tutti</option>
+                  ${operai.map((o) => `<option value="${o.id}">${esc(o.nomeCompleto)}</option>`).join('')}</select></label>
+                <label class="f">Cantiere<select id="fCa"><option value="">Tutti</option>
+                  ${cantieri.map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></label>
+                <label class="f">Tipo<select id="fTi"><option value="">Tutti</option>
+                  ${el2.tipiRegistro.map((t) => `<option>${esc(t)}</option>`).join('')}</select></label>
+                <span class="spacer"></span>
+                <button class="btn" id="csv" style="margin-bottom:1px">Esporta CSV</button>
+              </div>
+            </div>
+            <div id="lista"></div>
+          </section>`;
+
+        // ----- rapportino -----
+        if (el.querySelector('#rapTab')) {
+          const caricaRap = () => rapportino(el, operai.filter((o) => o.attivo), cantieri, () => caricaLista());
+          el.querySelector('#rData').addEventListener('change', (e) => { stato.data = e.target.value || oggiISO(); caricaRap(); });
+          el.querySelector('#rCant').addEventListener('change', (e) => { stato.cantiereId = e.target.value; caricaRap(); });
+          caricaRap();
+        }
+
+        // ----- storico -----
+        const f = stato.filtri;
+        el.querySelector('#fOp').value = f.operaioId;
+        el.querySelector('#fCa').value = f.cantiereId;
+        el.querySelector('#fTi').value = f.tipo;
+        let righe = [];
+        const caricaLista = async () => {
+          const p = calcolaPeriodo();
+          righe = await elencoOre({ ...p, ...f });
+          const lavoro = righe.filter((r) => r.tipo === 'Lavoro');
+          const lista = el.querySelector('#lista');
+          lista.innerHTML = tabella([
+            { t: 'Data', v: (r) => `${data(r.data)}` },
+            { t: 'Operaio', v: (r) => (isAdmin() ? `<a class="link" href="#/operai/${r.operaioId}">${esc(r.operaio)}</a>` : esc(r.operaio)) },
+            { t: 'Cantiere', v: (r) => (r.cantiere ? (isAdmin() ? `<a class="link" href="#/cantieri/${r.cantiereId}">${esc(r.cantiere)}</a> ` : esc(r.cantiere) + ' ') : '') + badgeTipo(r.tipo) },
+            { t: 'Lavorazione', cls: 'wrap hide-sm', v: (r) => esc(r.descrizione ?? '') },
+            { t: 'Ore', n: true, v: (r) => num(r.ore) },
+            { t: 'Straord.', n: true, v: (r) => (r.oreStraordinario ? num(r.oreStraordinario) : '') },
+            ...(isAdmin() ? [{ t: 'Costo', n: true, cls: 'hide-sm', v: (r) => (r.costo ? euro(r.costo) : '') }] : []),
+          ], righe, {
+            click: true,
+            vuoto: 'Nessuna registrazione con questi filtri',
+            piede: [`${righe.length} righe`, '', '', 'Ore lavorate', num(somma(lavoro, (r) => r.ore)), num(somma(lavoro, (r) => r.oreStraordinario)), euro(somma(righe, (r) => r.costo))].slice(0, isAdmin() ? 7 : 6),
+          });
+          collegaClick(lista, righe, (r) => formRegistro(r, ricaricaTutto));
+        };
+        const ricaricaTutto = () => render(el, {});
+        const onFiltro = () => {
+          f.operaioId = el.querySelector('#fOp').value;
+          f.cantiereId = el.querySelector('#fCa').value;
+          f.tipo = el.querySelector('#fTi').value;
+          caricaLista();
+        };
+        ['#fOp', '#fCa', '#fTi'].forEach((s) => el.querySelector(s).addEventListener('change', onFiltro));
+        collegaPeriodo(el.querySelector('#storico'), ricaricaTutto);
+        el.querySelector('#singola').onclick = () => formRegistro(null, ricaricaTutto, { tipo: 'Ferie' });
+        el.querySelector('#csv').onclick = () => scaricaCSV(`registro-ore.csv`, [
+          ['Periodo', descriviPeriodo()], [],
+          ['Data', 'Operaio', 'Tipo', 'Cantiere', 'Ore', 'Straordinario', 'Lavorazione', ...(isAdmin() ? ['Costo €'] : [])],
+          ...righe.slice().reverse().map((r) => [data(r.data), r.operaio, r.tipo, r.cantiere ?? '', r.ore, r.oreStraordinario, r.descrizione ?? '', ...(isAdmin() ? [r.costo] : [])]),
+        ]);
+        await caricaLista();
+      }
+
+      // Disegna la tabella del rapportino per la data e il cantiere scelti
+      async function rapportino(el, operaiAttivi, cantieri, dopoSalva) {
+        const { data: giorno, cantiereId } = stato;
+        const [delGiorno, precedenti] = await Promise.all([
+          oreDelGiorno({ data: giorno }),
+          elencoOre({ cantiereId, da: addDays(giorno, -14), a: addDays(giorno, -1), tipo: 'Lavoro' }),
+        ]);
+        const nomeCant = (id) => cantieri.find((c) => c.id === id)?.nome ?? '?';
+
+        // righe già salvate per questo cantiere, e altre ore/assenze dello stesso giorno
+        const qui = new Map(delGiorno.filter((r) => r.tipo === 'Lavoro' && r.cantiereId === cantiereId).map((r) => [r.operaioId, r]));
+        const altrove = new Map();
+        for (const r of delGiorno) {
+          if (r.tipo === 'Lavoro' && r.cantiereId === cantiereId) continue;
+          const testo = r.tipo === 'Lavoro' ? `${num(r.totale)} h su ${r.cantiere}` : `${r.tipo} ${num(r.totale)} h`;
+          altrove.set(r.operaioId, [...(altrove.get(r.operaioId) ?? []), { testo, assenza: r.tipo !== 'Lavoro' }]);
+        }
+
+        // se il rapportino è nuovo, preseleziona la squadra dell'ultimo giorno lavorato su questo cantiere
+        let squadra = new Set();
+        let info = '';
+        if (qui.size === 0 && precedenti.length) {
+          const ultimo = precedenti[0].data;
+          squadra = new Set(precedenti.filter((r) => r.data === ultimo).map((r) => r.operaioId));
+          for (const id of altrove.keys()) if (altrove.get(id).some((x) => x.assenza)) squadra.delete(id);
+          info = `Nuovo rapportino · preselezionata la squadra del ${data(ultimo)}`;
+        } else if (qui.size) {
+          info = `Rapportino già salvato: stai modificando ${qui.size} righe`;
+        } else {
+          info = 'Nuovo rapportino';
+        }
+        el.querySelector('#rapInfo').textContent = info;
+
+        // ordina: prima chi è già sul rapportino o in squadra, poi gli altri
+        const ordinati = [...operaiAttivi].sort((a, b) =>
+          Number(qui.has(b.id) || squadra.has(b.id)) - Number(qui.has(a.id) || squadra.has(a.id)));
+
+        const tab = el.querySelector('#rapTab');
+        tab.innerHTML = `<div class="table-wrap"><table>
+          <thead><tr><th style="width:36px"></th><th>Operaio</th><th class="n">Ore</th><th class="n">Straord.</th><th class="hide-sm">Nota (facoltativa)</th></tr></thead>
+          <tbody>${ordinati.map((o) => {
+            const r = qui.get(o.id);
+            const on = !!r || squadra.has(o.id);
+            const alt = altrove.get(o.id);
+            return `<tr class="rap-row ${on ? '' : 'off'}" data-id="${o.id}">
+              <td><input type="checkbox" class="sel" ${on ? 'checked' : ''} aria-label="Presente"></td>
+              <td><b>${esc(o.nomeCompleto)}</b> <span class="muted">${esc(o.qualifica ?? '')}</span>
+                ${alt ? `<span class="altro">${alt.map((x) => esc(x.testo)).join(' · ')}</span>` : ''}</td>
+              <td class="n"><input class="h ore" type="number" inputmode="decimal" min="0" max="24" step="0.5" value="${r ? r.ore : 8}" ${on ? '' : 'disabled'}></td>
+              <td class="n"><input class="h str" type="number" inputmode="decimal" min="0" max="24" step="0.5" value="${r ? r.oreStraordinario : 0}" ${on ? '' : 'disabled'}></td>
+              <td class="hide-sm"><input class="d nota" value="${esc(r?.descrizione ?? '')}" ${on ? '' : 'disabled'}></td>
+            </tr>`;
+          }).join('')}</tbody></table></div>`;
+
+        // la descrizione comune: se tutte le righe salvate hanno la stessa, la mostro sopra
+        const descrizioni = [...new Set([...qui.values()].map((r) => r.descrizione ?? ''))];
+        const descr = el.querySelector('#rDescr');
+        descr.value = descrizioni.length === 1 ? descrizioni[0] : '';
+        if (descrizioni.length === 1) tab.querySelectorAll('.nota').forEach((n) => { if (n.value === descr.value) n.value = ''; });
+
+        const totale = () => {
+          let h = 0, n = 0;
+          tab.querySelectorAll('.rap-row').forEach((tr) => {
+            if (!tr.querySelector('.sel').checked) return;
+            n++;
+            h += Number(tr.querySelector('.ore').value || 0) + Number(tr.querySelector('.str').value || 0);
+          });
+          el.querySelector('#rapTot').textContent = `${n} operai · ${ore(h)}`;
+        };
+        const imposta = (tr, on) => {
+          tr.querySelector('.sel').checked = on;
+          tr.classList.toggle('off', !on);
+          tr.querySelectorAll('input:not(.sel)').forEach((i) => { i.disabled = !on; });
+        };
+        tab.querySelectorAll('.rap-row').forEach((tr) => {
+          tr.querySelector('.sel').addEventListener('change', (e) => { imposta(tr, e.target.checked); totale(); });
+          tr.querySelectorAll('.ore,.str').forEach((i) => i.addEventListener('input', totale));
+        });
+        el.querySelector('#tutti').onclick = () => { tab.querySelectorAll('.rap-row').forEach((tr) => imposta(tr, true)); totale(); };
+        el.querySelector('#nessuno').onclick = () => { tab.querySelectorAll('.rap-row').forEach((tr) => imposta(tr, false)); totale(); };
+        el.querySelector('#oreTutti').onclick = () => {
+          tab.querySelectorAll('.rap-row').forEach((tr) => { if (tr.querySelector('.sel').checked) tr.querySelector('.ore').value = 8; });
+          totale();
+        };
+        totale();
+
+        el.querySelector('#salvaRap').onclick = async (e) => {
+          const righe = [];
+          tab.querySelectorAll('.rap-row').forEach((tr) => {
+            const id = tr.dataset.id;
+            const on = tr.querySelector('.sel').checked;
+            if (!on && !qui.has(id)) return; // niente da fare
+            righe.push({
+              operaioId: id,
+              ore: on ? Number(tr.querySelector('.ore').value || 0) : 0,
+              oreStraordinario: on ? Number(tr.querySelector('.str').value || 0) : 0,
+              descrizione: tr.querySelector('.nota').value.trim() || descr.value.trim() || null,
+            });
+          });
+          if (!righe.length) return toast('Seleziona almeno un operaio', 'err');
+          e.target.disabled = true;
+          try {
+            const r = await salvaRapportino({ data: giorno, cantiereId, righe });
+            toast(`Rapportino salvato: ${r.salvate} righe${r.eliminate ? `, ${r.eliminate} rimosse` : ''} · ${nomeCant(cantiereId)}, ${dataLunga(giorno)}`);
+            await rapportino(el, operaiAttivi, cantieri, dopoSalva);
+            dopoSalva();
+          } catch (ex) {
+            toast(ex.message, 'err');
+          } finally {
+            e.target.disabled = false;
+          }
+        };
+      }
+      return render;
+    })();
+
+    // ---------- Cantieri ----------
+    const paginaCantieri = (() => {
+      let filtroStato = 'attivi';
+      let filtroTesto = '';
+
+      function render(el, params) {
+        return params.id ? dettaglio(el, params.id) : elenco(el);
+      }
+
+      // ===================== ELENCO =====================
+      async function elenco(el) {
+        const tutti = await elencoCantieri();
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Cantieri</h1><p class="sub">${tutti.length} cantieri in archivio</p></div>
+            <div class="actions"><button class="btn primary" id="nuovo">+ Nuovo cantiere</button></div>
+          </div>
+          <div class="filters">
+            <label class="f grow">Cerca<input id="q" type="search" placeholder="Nome, committente, indirizzo, codice…" value="${esc(filtroTesto)}"></label>
+            <label class="f">Stato<select id="st">
+              <option value="attivi">In corso, pianificati e sospesi</option>
+              <option value="">Tutti</option>
+              ${['In corso', 'Pianificato', 'Sospeso', 'Completato'].map((s) => `<option>${s}</option>`).join('')}
+            </select></label>
+          </div>
+          <div id="lista"></div>`;
+
+        el.querySelector('#st').value = filtroStato;
+        const disegna = () => {
+          const q = filtroTesto.toLowerCase();
+          const righe = tutti.filter((c) =>
+            (filtroStato === '' || (filtroStato === 'attivi' ? c.stato !== 'Completato' : c.stato === filtroStato)) &&
+            (!q || [c.nome, c.committente, c.indirizzo, c.codice].some((x) => x?.toLowerCase().includes(q))));
+          el.querySelector('#lista').innerHTML = righe.length ? `<div class="cards">${righe.map(card).join('')}</div>`
+            : `<div class="card empty">Nessun cantiere trovato</div>`;
+        };
+        el.querySelector('#q').addEventListener('input', (e) => { filtroTesto = e.target.value; disegna(); });
+        el.querySelector('#st').addEventListener('change', (e) => { filtroStato = e.target.value; disegna(); });
+        el.querySelector('#nuovo').onclick = () => formCantiere(null, (c) => { location.hash = `#/cantieri/${c.id}`; });
+        disegna();
+      }
+
+      function card(c) {
+        return `<a class="ccard" href="#/cantieri/${c.id}">
+          <div class="top"><div><h3>${esc(c.nome)}</h3>
+            <div class="meta">${esc([c.codice, c.committente].filter(Boolean).join(' · ') || '—')}</div></div>${badgeStato(c.stato)}</div>
+          ${c.indirizzo ? `<div class="meta">📍 ${esc(c.indirizzo)}</div>` : ''}
+          <div class="figs">
+            <div><b>${num(c.oreTotali)}</b><span>ore${c.oreStimate ? ` / ${num(c.oreStimate)}` : ''}</span></div>
+            <div><b>${c.operaiCoinvolti}</b><span>operai</span></div>
+            <div><b>${euro0(c.costoTotale)}</b><span>costi</span></div>
+          </div>
+          ${c.budget ? progresso(c.costoTotale, c.budget) : ''}
+          <div class="meta">${c.dataInizio ? `Inizio ${data(c.dataInizio)}` : ''}${c.dataFinePrevista ? ` · Fine prevista ${data(c.dataFinePrevista)}` : ''}
+            ${c.ultimaAttivita ? `<br>Ultima attività ${data(c.ultimaAttivita)}` : ''}</div>
+        </a>`;
+      }
+
+      // ===================== DETTAGLIO =====================
+      async function dettaglio(el, id) {
+        const p = calcolaPeriodo();
+        const [r, registrazioni, spese] = await Promise.all([
+          riepilogoCantiere(id, p),
+          elencoOre({ ...p, cantiereId: id }),
+          elencoSpese({ ...p, cantiereId: id }),
+        ]);
+        const c = r.cantiere, t = r.totali;
+        const ricarica = () => dettaglio(el, id);
+
+        el.innerHTML = `
+          <a class="crumb" href="#/cantieri">← Cantieri</a>
+          <div class="page-head">
+            <div><h1>${esc(c.nome)} ${badgeStato(c.stato)}</h1>
+              <p class="sub">${esc([c.codice, c.committente, c.indirizzo].filter(Boolean).join(' · '))}</p></div>
+            <div class="actions">
+              <a class="btn primary" href="#/ore?cantiere=${c.id}">+ Rapportino</a>
+              <button class="btn" id="spesa">+ Spesa</button>
+              <button class="btn" id="modifica">Modifica</button>
+            </div>
+          </div>
+
+          <section class="card">
+            <div class="info">
+              <div><span>Responsabile</span><b>${esc(c.responsabile ?? '—')}</b></div>
+              <div><span>Inizio</span><b>${data(c.dataInizio)}</b></div>
+              <div><span>Fine prevista</span><b>${data(c.dataFinePrevista)}</b></div>
+              ${c.dataFine ? `<div><span>Fine effettiva</span><b>${data(c.dataFine)}</b></div>` : ''}
+              <div><span>Budget</span><b>${c.budget ? euro(c.budget) : '—'}</b></div>
+              <div><span>Ore stimate</span><b>${c.oreStimate ? ore(c.oreStimate) : '—'}</b></div>
+            </div>
+            ${c.note ? `<p class="muted" style="margin:14px 0 0;white-space:pre-line">${esc(c.note)}</p>` : ''}
+          </section>
+
+          <div class="page-head mt" style="margin-bottom:12px"><h2>Riepilogo <span class="muted" style="font-weight:500">${esc(descriviPeriodo())}</span></h2>${periodoHTML()}</div>
+
+          <section class="kpis">
+            <div class="kpi accent"><div class="lbl">Ore lavorate</div><div class="val">${num(t.totale)}<small>h</small></div>
+              <div class="foot">${num(t.ore)} ordinarie + ${num(t.straordinario)} straord.</div></div>
+            <div class="kpi"><div class="lbl">Giorni lavorati</div><div class="val">${t.giorni}</div>
+              <div class="foot">${t.operai} operai coinvolti</div></div>
+            <div class="kpi"><div class="lbl">Costo manodopera</div><div class="val">${euro0(t.costoManodopera)}</div>
+              <div class="foot">${t.totale ? euro(t.costoManodopera / t.totale) + ' / ora medio' : '—'}</div></div>
+            <div class="kpi"><div class="lbl">Spese</div><div class="val">${euro0(t.spese)}</div>
+              <div class="foot">materiali, noleggi, subappalti…</div></div>
+            <div class="kpi"><div class="lbl">Costo totale</div><div class="val">${euro0(t.costoTotale)}</div>
+              <div class="foot">${c.budget ? progresso(t.costoTotale, c.budget) : 'nessun budget impostato'}</div></div>
+            ${c.oreStimate ? `<div class="kpi"><div class="lbl">Ore su stima</div><div class="val">${Math.round((t.totale / c.oreStimate) * 100)}<small>%</small></div>
+              <div class="foot">${progresso(t.totale, c.oreStimate, { formato: (n) => num(n) + ' h' })}</div></div>` : ''}
+            ${t.oreFermoMaltempo ? `<div class="kpi"><div class="lbl">Fermo maltempo</div><div class="val">${num(t.oreFermoMaltempo)}<small>h</small></div><div class="foot">ore non lavorate</div></div>` : ''}
+          </section>
+
+          <div class="grid-3-2">
+            <section class="card flush" id="perOperaio">
+              <div class="card-head"><h2>Ore per operaio</h2><button class="btn sm" id="csvOp">Esporta CSV</button></div>
+              ${tabella([
+                { t: 'Operaio', v: (x) => `<a class="link" href="#/operai/${x.operaioId}">${esc(x.operaio)}</a><div class="muted">${esc(x.qualifica ?? '')}</div>` },
+                { t: 'Giorni', n: true, v: (x) => x.giorni },
+                { t: 'Ordinarie', n: true, cls: 'hide-sm', v: (x) => num(x.ore) },
+                { t: 'Straord.', n: true, cls: 'hide-sm', v: (x) => num(x.straordinario) },
+                { t: 'Totale', n: true, v: (x) => `<b>${ore(x.totale)}</b>` },
+                { t: 'Costo', n: true, v: (x) => euro0(x.costo) },
+              ], r.perOperaio, {
+                piede: ['Totale', t.giorni, num(t.ore), num(t.straordinario), ore(t.totale), euro0(t.costoManodopera)],
+                vuoto: 'Nessuna ora registrata nel periodo',
+              })}
+            </section>
+            <div class="stack">
+              <section class="card">
+                <div class="card-head"><h2>Andamento mensile</h2><span class="hint">ore lavorate</span></div>
+                ${r.perMese.length ? barre(r.perMese.map((m) => ({ label: nomeMese(m.mese), valore: m.totale })), { formato: ore, grande: r.perMese.length <= 8 }) : '<div class="empty">Nessun dato</div>'}
+              </section>
+              <section class="card">
+                <div class="card-head"><h2>Costi per voce</h2></div>
+                ${barreOrizzontali([{ label: 'Manodopera', valore: t.costoManodopera }, ...r.speseCategoria.map((s) => ({ label: s.categoria, valore: s.totale }))]
+                  .filter((x) => x.valore), euro0)}
+              </section>
+            </div>
+          </div>
+
+          <section class="card flush mt" id="tSpese">
+            <div class="card-head"><h2>Spese</h2><span class="hint">${spese.length} voci · ${euro(somma(spese, (s) => s.importo))}</span></div>
+            ${tabella([
+              { t: 'Data', v: (s) => data(s.data) },
+              { t: 'Categoria', v: (s) => `<span class="badge">${esc(s.categoria)}</span>` },
+              { t: 'Descrizione', cls: 'wrap', v: (s) => esc(s.descrizione) + (s.numeroDocumento ? ` <span class="muted">(${esc(s.numeroDocumento)})</span>` : '') },
+              { t: 'Fornitore', cls: 'hide-sm', v: (s) => esc(s.fornitore ?? '') },
+              { t: 'Importo', n: true, v: (s) => euro(s.importo) },
+            ], spese, { click: true, vuoto: 'Nessuna spesa nel periodo' })}
+          </section>
+
+          <section class="card flush mt" id="tReg">
+            <div class="card-head"><h2>Registrazioni</h2><span class="hint">${registrazioni.length} righe · clic per modificare</span></div>
+            ${tabella([
+              { t: 'Data', v: (x) => data(x.data) },
+              { t: 'Operaio', v: (x) => esc(x.operaio) + ' ' + badgeTipo(x.tipo) },
+              { t: 'Lavorazione', cls: 'wrap hide-sm', v: (x) => esc(x.descrizione ?? '') },
+              { t: 'Ore', n: true, v: (x) => num(x.ore) + (x.oreStraordinario ? ` <span class="muted">+${num(x.oreStraordinario)}</span>` : '') },
+            ], registrazioni.slice(0, 30), { click: true, vuoto: 'Nessuna registrazione nel periodo' })}
+            ${registrazioni.length > 30 ? `<div class="empty">Mostrate le ultime 30. <a class="link" href="#/ore">Vedi il registro completo</a></div>` : ''}
+          </section>`;
+
+        collegaPeriodo(el, ricarica);
+        el.querySelector('#modifica').onclick = () => formCantiere(c, ricarica);
+        el.querySelector('#spesa').onclick = () => formSpesa(null, ricarica, { cantiereId: c.id });
+        collegaClick(el.querySelector('#tSpese'), spese, (s) => formSpesa(s, ricarica));
+        collegaClick(el.querySelector('#tReg'), registrazioni, (x) => formRegistro(x, ricarica));
+        el.querySelector('#csvOp').onclick = () => scaricaCSV(`ore-${c.nome}.csv`, [
+          ['Cantiere', c.nome], ['Periodo', descriviPeriodo()], [],
+          ['Operaio', 'Qualifica', 'Giorni', 'Ore ordinarie', 'Ore straordinario', 'Ore totali', 'Costo €', 'Primo giorno', 'Ultimo giorno'],
+          ...r.perOperaio.map((x) => [x.operaio, x.qualifica, x.giorni, x.ore, x.straordinario, x.totale, x.costo, data(x.primoGiorno), data(x.ultimoGiorno)]),
+          ['TOTALE', '', t.giorni, t.ore, t.straordinario, t.totale, t.costoManodopera],
+        ]);
+      }
+      return render;
+    })();
+
+    // ---------- Operai ----------
+    const paginaOperai = (() => {
+      let mostraInattivi = false;
+      let filtroTesto = '';
+
+      function render(el, params) {
+        return params.id ? dettaglio(el, params.id) : elenco(el);
+      }
+
+      // ===================== ELENCO =====================
+      async function elenco(el) {
+        const tutti = await elencoOperai();
+        const meseNome = new Date().toLocaleDateString('it-IT', { month: 'long' });
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Operai</h1><p class="sub">${tutti.filter((o) => o.attivo).length} attivi su ${tutti.length}</p></div>
+            <div class="actions"><button class="btn primary" id="nuovo">+ Nuovo operaio</button></div>
+          </div>
+          <div class="filters">
+            <label class="f grow">Cerca<input id="q" type="search" placeholder="Nome, qualifica, telefono…" value="${esc(filtroTesto)}"></label>
+            <label class="check" style="padding-bottom:10px"><input type="checkbox" id="inattivi" ${mostraInattivi ? 'checked' : ''}> Mostra anche non attivi</label>
+          </div>
+          <section class="card flush" id="lista"></section>`;
+
+        const disegna = () => {
+          const q = filtroTesto.toLowerCase();
+          const righe = tutti.filter((o) => (mostraInattivi || o.attivo) &&
+            (!q || [o.nomeCompleto, o.qualifica, o.telefono, o.codiceFiscale].some((x) => x?.toLowerCase().includes(q))));
+          el.querySelector('#lista').innerHTML = tabella([
+            { t: 'Operaio', v: (o) => `<a class="link" href="#/operai/${o.id}">${esc(o.nomeCompleto)}</a>${o.attivo ? '' : ' <span class="badge">Non attivo</span>'}` },
+            { t: 'Qualifica', v: (o) => esc(o.qualifica ?? '') },
+            { t: 'Telefono', cls: 'hide-sm', v: (o) => o.telefono ? `<a class="link" href="tel:${esc(o.telefono)}">${esc(o.telefono)}</a>` : '' },
+            { t: 'Costo orario', n: true, cls: 'hide-sm', v: (o) => euro(o.costoOrario) },
+            { t: `Ore ${meseNome}`, n: true, v: (o) => ore(o.oreMese) },
+            { t: 'Documenti', v: (o) => o.scadenzeInArrivo ? `<span class="badge warn">${o.scadenzeInArrivo} in scadenza</span>` : '<span class="muted">—</span>' },
+          ], righe, { click: true, vuoto: 'Nessun operaio' });
+          collegaClick(el.querySelector('#lista'), righe, (o) => { location.hash = `#/operai/${o.id}`; });
+        };
+        el.querySelector('#q').addEventListener('input', (e) => { filtroTesto = e.target.value; disegna(); });
+        el.querySelector('#inattivi').addEventListener('change', (e) => { mostraInattivi = e.target.checked; disegna(); });
+        el.querySelector('#nuovo').onclick = () => formOperaio(null, (o) => { location.hash = `#/operai/${o.id}`; });
+        disegna();
+      }
+
+      // ===================== DETTAGLIO =====================
+      async function dettaglio(el, id) {
+        const p = calcolaPeriodo();
+        const [r, registrazioni] = await Promise.all([
+          riepilogoOperaio(id, p),
+          elencoOre({ ...p, operaioId: id }),
+        ]);
+        const o = r.operaio, t = r.totali;
+        const ricarica = () => dettaglio(el, id);
+
+        el.innerHTML = `
+          <a class="crumb" href="#/operai">← Operai</a>
+          <div class="page-head">
+            <div><h1>${esc(o.nomeCompleto)} ${o.attivo ? '' : '<span class="badge">Non attivo</span>'}</h1>
+              <p class="sub">${esc(o.qualifica ?? 'Qualifica non indicata')}</p></div>
+            <div class="actions">
+              <button class="btn primary" id="registra">+ Ore / assenza</button>
+              <button class="btn" id="modifica">Modifica</button>
+            </div>
+          </div>
+
+          <section class="card">
+            <div class="info">
+              <div><span>Telefono</span><b>${o.telefono ? `<a class="link" href="tel:${esc(o.telefono)}">${esc(o.telefono)}</a>` : '—'}</b></div>
+              <div><span>Email</span><b>${esc(o.email ?? '—')}</b></div>
+              <div><span>Codice fiscale</span><b>${esc(o.codiceFiscale ?? '—')}</b></div>
+              <div><span>Assunto il</span><b>${data(o.dataAssunzione)}</b></div>
+              <div><span>Costo orario</span><b>${euro(o.costoOrario)}</b></div>
+              <div><span>Costo straordinario</span><b>${euro(o.costoOrarioStraordinario)}</b></div>
+            </div>
+            ${o.note ? `<p class="muted" style="margin:14px 0 0;white-space:pre-line">${esc(o.note)}</p>` : ''}
+          </section>
+
+          <div class="page-head mt" style="margin-bottom:12px"><h2>Riepilogo <span class="muted" style="font-weight:500">${esc(descriviPeriodo())}</span></h2>${periodoHTML()}</div>
+
+          <section class="kpis">
+            <div class="kpi accent"><div class="lbl">Ore lavorate</div><div class="val">${num(t.totale)}<small>h</small></div>
+              <div class="foot">${num(t.ore)} ordinarie + ${num(t.straordinario)} straord.</div></div>
+            <div class="kpi"><div class="lbl">Giorni lavorati</div><div class="val">${t.giorni}</div>
+              <div class="foot">${t.giorni ? num(t.totale / t.giorni) + ' h al giorno in media' : '—'}</div></div>
+            <div class="kpi"><div class="lbl">Cantieri</div><div class="val">${t.cantieri}</div><div class="foot">nel periodo</div></div>
+            <div class="kpi"><div class="lbl">Costo per l'impresa</div><div class="val">${euro0(t.costo)}</div><div class="foot">ore × costo orario</div></div>
+            <div class="kpi"><div class="lbl">Giorni di assenza</div><div class="val">${t.giorniAssenza}</div>
+              <div class="foot">${r.assenze.map((a) => `${esc(a.tipo)} ${a.giorni}`).join(' · ') || 'nessuna'}</div></div>
+          </section>
+
+          <div class="grid-3-2">
+            <section class="card flush">
+              <div class="card-head"><h2>Ore per cantiere</h2><button class="btn sm" id="csv">Esporta CSV</button></div>
+              ${tabella([
+                { t: 'Cantiere', v: (x) => `<a class="link" href="#/cantieri/${x.cantiereId}">${esc(x.cantiere)}</a> ${x.stato && x.stato !== 'In corso' ? badgeStato(x.stato) : ''}
+                    <div class="muted">${data(x.primoGiorno)} → ${data(x.ultimoGiorno)}</div>` },
+                { t: 'Giorni', n: true, v: (x) => x.giorni },
+                { t: 'Straord.', n: true, cls: 'hide-sm', v: (x) => num(x.straordinario) },
+                { t: 'Totale', n: true, v: (x) => `<b>${ore(x.totale)}</b>` },
+                { t: 'Costo', n: true, cls: 'hide-sm', v: (x) => euro0(x.costo) },
+              ], r.perCantiere, {
+                piede: ['Totale', t.giorni, num(t.straordinario), ore(t.totale), euro0(t.costo)],
+                vuoto: 'Nessuna ora nel periodo',
+              })}
+            </section>
+            <section class="card">
+              <div class="card-head"><h2>Andamento mensile</h2></div>
+              ${r.perMese.length ? barre(r.perMese.map((m) => ({ label: nomeMese(m.mese), valore: m.totale })), { formato: ore, grande: r.perMese.length <= 8 }) : '<div class="empty">Nessun dato</div>'}
+            </section>
+          </div>
+
+          <section class="card flush mt" id="tDoc">
+            <div class="card-head"><h2>Documenti e scadenze</h2><button class="btn sm" id="doc">+ Documento</button></div>
+            ${tabella([
+              { t: 'Documento', v: (s) => `<b>${esc(s.tipo)}</b>${s.note ? `<div class="muted">${esc(s.note)}</div>` : ''}` },
+              { t: 'Rilascio', cls: 'hide-sm', v: (s) => data(s.dataRilascio) },
+              { t: 'Scadenza', v: (s) => data(s.dataScadenza) },
+              { t: 'Stato', v: (s) => badgeScadenza(s.giorniMancanti) },
+            ], r.scadenze, { click: true, vuoto: 'Nessun documento registrato (visite mediche, corsi sicurezza, patentini…)' })}
+          </section>
+
+          <section class="card flush mt" id="tReg">
+            <div class="card-head"><h2>Registrazioni</h2><span class="hint">${registrazioni.length} righe · clic per modificare</span></div>
+            ${tabella([
+              { t: 'Data', v: (x) => data(x.data) },
+              { t: 'Cantiere', v: (x) => (x.cantiere ? esc(x.cantiere) : '') + ' ' + badgeTipo(x.tipo) },
+              { t: 'Lavorazione', cls: 'wrap hide-sm', v: (x) => esc(x.descrizione ?? '') },
+              { t: 'Ore', n: true, v: (x) => num(x.ore) + (x.oreStraordinario ? ` <span class="muted">+${num(x.oreStraordinario)}</span>` : '') },
+            ], registrazioni.slice(0, 30), { click: true, vuoto: 'Nessuna registrazione nel periodo' })}
+            ${registrazioni.length > 30 ? `<div class="empty">Mostrate le ultime 30. <a class="link" href="#/ore">Vedi il registro completo</a> o esporta il CSV.</div>` : ''}
+          </section>`;
+
+        collegaPeriodo(el, ricarica);
+        el.querySelector('#modifica').onclick = () => formOperaio(o, ricarica);
+        el.querySelector('#registra').onclick = () => formRegistro(null, ricarica, { operaioId: o.id });
+        el.querySelector('#doc').onclick = () => formScadenza(null, o.id, ricarica);
+        collegaClick(el.querySelector('#tDoc'), r.scadenze, (s) => formScadenza(s, o.id, ricarica));
+        collegaClick(el.querySelector('#tReg'), registrazioni, (x) => formRegistro(x, ricarica));
+        el.querySelector('#csv').onclick = () => scaricaCSV(`ore-${o.cognome}-${o.nome}.csv`, [
+          ['Operaio', o.nomeCompleto], ['Periodo', descriviPeriodo()], [],
+          ['Data', 'Tipo', 'Cantiere', 'Ore', 'Straordinario', 'Lavorazione'],
+          ...registrazioni.slice().reverse().map((x) => [data(x.data), x.tipo, x.cantiere ?? '', x.ore, x.oreStraordinario, x.descrizione ?? '']),
+          [], ['Totale ore lavorate', '', '', t.ore, t.straordinario],
+        ]);
+      }
+      return render;
+    })();
+
+    // ---------- Spese ----------
+    const paginaSpese = (() => {
+      const filtri = { cantiereId: '', categoria: '' };
+
+      async function render(el) {
+        const [cantieri, el2] = await Promise.all([elencoCantieri(), elenchi()]);
+        const spese = await elencoSpese({ ...calcolaPeriodo(), ...filtri });
+        const ricarica = () => render(el);
+
+        const perCat = Object.entries(spese.reduce((m, s) => ({ ...m, [s.categoria]: (m[s.categoria] || 0) + s.importo }), {}))
+          .map(([label, valore]) => ({ label, valore })).sort((a, b) => b.valore - a.valore);
+        const perCant = Object.values(spese.reduce((m, s) => {
+          m[s.cantiereId] ??= { label: s.cantiere, href: `#/cantieri/${s.cantiereId}`, valore: 0 };
+          m[s.cantiereId].valore += s.importo;
+          return m;
+        }, {})).sort((a, b) => b.valore - a.valore);
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Spese</h1><p class="sub">Materiali, noleggi, subappalti e altri costi dei cantieri · ${esc(descriviPeriodo())}</p></div>
+            <div class="actions"><button class="btn primary" id="nuova">+ Nuova spesa</button></div>
+          </div>
+          <div class="filters">
+            ${periodoHTML()}
+            <label class="f">Cantiere<select id="fCa"><option value="">Tutti</option>
+              ${cantieri.map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join('')}</select></label>
+            <label class="f">Categoria<select id="fCat"><option value="">Tutte</option>
+              ${el2.categorieSpesa.map((c) => `<option>${esc(c)}</option>`).join('')}</select></label>
+          </div>
+
+          <section class="kpis">
+            <div class="kpi accent"><div class="lbl">Totale spese</div><div class="val">${euro0(somma(spese, (s) => s.importo))}</div><div class="foot">${spese.length} voci</div></div>
+          </section>
+
+          <div class="grid-2">
+            <section class="card"><div class="card-head"><h2>Per categoria</h2></div>${barreOrizzontali(perCat, euro0)}</section>
+            <section class="card"><div class="card-head"><h2>Per cantiere</h2></div>${barreOrizzontali(perCant, euro0)}</section>
+          </div>
+
+          <section class="card flush mt" id="lista">
+            <div class="card-head"><h2>Elenco</h2><button class="btn sm" id="csv">Esporta CSV</button></div>
+            ${tabella([
+              { t: 'Data', v: (s) => data(s.data) },
+              { t: 'Cantiere', v: (s) => `<a class="link" href="#/cantieri/${s.cantiereId}">${esc(s.cantiere)}</a>` },
+              { t: 'Categoria', v: (s) => `<span class="badge">${esc(s.categoria)}</span>` },
+              { t: 'Descrizione', cls: 'wrap', v: (s) => esc(s.descrizione) + (s.numeroDocumento ? ` <span class="muted">(${esc(s.numeroDocumento)})</span>` : '') },
+              { t: 'Fornitore', cls: 'hide-sm', v: (s) => esc(s.fornitore ?? '') },
+              { t: 'Importo', n: true, v: (s) => euro(s.importo) },
+            ], spese, { click: true, vuoto: 'Nessuna spesa con questi filtri', piede: ['Totale', '', '', '', '', euro(somma(spese, (s) => s.importo))] })}
+          </section>`;
+
+        el.querySelector('#fCa').value = filtri.cantiereId;
+        el.querySelector('#fCat').value = filtri.categoria;
+        el.querySelector('#fCa').onchange = (e) => { filtri.cantiereId = e.target.value; ricarica(); };
+        el.querySelector('#fCat').onchange = (e) => { filtri.categoria = e.target.value; ricarica(); };
+        collegaPeriodo(el, ricarica);
+        el.querySelector('#nuova').onclick = () => formSpesa(null, ricarica, filtri.cantiereId ? { cantiereId: filtri.cantiereId } : {});
+        collegaClick(el.querySelector('#lista'), spese, (s) => formSpesa(s, ricarica));
+        el.querySelector('#csv').onclick = () => scaricaCSV('spese.csv', [
+          ['Periodo', descriviPeriodo()], [],
+          ['Data', 'Cantiere', 'Categoria', 'Descrizione', 'Fornitore', 'N. documento', 'Importo €'],
+          ...spese.map((s) => [data(s.data), s.cantiere, s.categoria, s.descrizione, s.fornitore ?? '', s.numeroDocumento ?? '', s.importo]),
+        ]);
+      }
+      return render;
+    })();
+
+    // ---------- Report ----------
+    const paginaReport = (() => {
+      let scheda = 'matrice';
+      const oggi = new Date();
+      let meseSel = `${oggi.getFullYear()}-${String(oggi.getMonth() + 1).padStart(2, '0')}`;
+
+      const CODICI = { Ferie: 'F', Permesso: 'P', Malattia: 'M', Infortunio: 'I', Maltempo: 'MT', Altro: 'A' };
+
+      async function render(el) {
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Report</h1><p class="sub">Riepiloghi da esportare in Excel o stampare</p></div>
+            <div class="actions"><button class="btn" id="stampa">Stampa</button><button class="btn primary" id="csv">Esporta CSV</button></div>
+          </div>
+          <div class="tabs" role="tablist">
+            <button data-s="matrice">Ore operaio × cantiere</button>
+            <button data-s="presenze">Foglio presenze mensile</button>
+            <button data-s="costi">Costi per cantiere</button>
+          </div>
+          <div id="corpo"><div class="loading">Caricamento…</div></div>`;
+
+        el.querySelectorAll('.tabs button').forEach((b) => {
+          b.classList.toggle('on', b.dataset.s === scheda);
+          b.onclick = () => { scheda = b.dataset.s; render(el); };
+        });
+        el.querySelector('#stampa').onclick = () => window.print();
+
+        const corpo = el.querySelector('#corpo');
+        const ricarica = () => render(el);
+        let esporta;
+        if (scheda === 'matrice') esporta = await matrice(corpo, ricarica);
+        else if (scheda === 'presenze') esporta = await presenze(corpo, ricarica);
+        else esporta = await costi(corpo, ricarica);
+        el.querySelector('#csv').onclick = esporta;
+      }
+
+      // ---------- Operai x Cantieri ----------
+      async function matrice(el, ricarica) {
+        const m = await reportMatrice(calcolaPeriodo());
+        el.innerHTML = `
+          <div class="filters">${periodoHTML()}</div>
+          <h2 class="print-title">Ore per operaio e cantiere — ${esc(descriviPeriodo())}</h2>
+          <section class="card flush">
+            <div class="card-head"><h2>Ore lavorate <span class="muted" style="font-weight:500">${esc(descriviPeriodo())}</span></h2>
+              <span class="hint">ordinarie + straordinarie · costo totale ${euro0(m.costo)}</span></div>
+            ${m.righe.length ? `<div class="table-wrap"><table>
+              <thead><tr><th>Operaio</th>${m.cantieri.map((c) => `<th class="n" title="${esc(c.nome)}">${esc(c.nome.length > 22 ? c.nome.slice(0, 20) + '…' : c.nome)}</th>`).join('')}
+                <th class="n">di cui straord.</th><th class="n">Totale</th></tr></thead>
+              <tbody>${m.righe.map((r) => `<tr><td><a class="link" href="#/operai/${r.operaioId}">${esc(r.operaio)}</a></td>
+                ${m.cantieri.map((c) => `<td class="n">${r.celle[c.id] ? num(r.celle[c.id]) : '<span class="muted">·</span>'}</td>`).join('')}
+                <td class="n muted">${r.straordinario ? num(r.straordinario) : ''}</td>
+                <td class="n"><b>${num(r.totale)}</b></td></tr>`).join('')}</tbody>
+              <tfoot><tr><td>Totale</td>${m.cantieri.map((c) => `<td class="n">${num(m.totaliColonne[c.id])}</td>`).join('')}
+                <td class="n">${num(somma(m.righe, (r) => r.straordinario))}</td><td class="n">${num(m.totale)}</td></tr></tfoot>
+            </table></div>` : '<div class="empty">Nessuna ora nel periodo</div>'}
+          </section>`;
+        collegaPeriodo(el, ricarica);
+        return () => scaricaCSV('ore-operai-cantieri.csv', [
+          ['Periodo', descriviPeriodo()], [],
+          ['Operaio', ...m.cantieri.map((c) => c.nome), 'di cui straordinario', 'Totale ore', 'Costo €'],
+          ...m.righe.map((r) => [r.operaio, ...m.cantieri.map((c) => r.celle[c.id] ?? 0), r.straordinario, r.totale, r.costo]),
+          ['TOTALE', ...m.cantieri.map((c) => m.totaliColonne[c.id]), somma(m.righe, (r) => r.straordinario), m.totale, m.costo],
+        ]);
+      }
+
+      // ---------- Foglio presenze ----------
+      async function presenze(el, ricarica) {
+        const [anno, mese] = meseSel.split('-').map(Number);
+        const f = await reportMensile({ anno, mese });
+        const giorni = Array.from({ length: f.giorniNelMese }, (_, i) => i + 1);
+        const weekend = (g) => [0, 6].includes(new Date(anno, mese - 1, g).getDay());
+        const iniz = (g) => new Date(anno, mese - 1, g).toLocaleDateString('it-IT', { weekday: 'narrow' });
+        const tipiAss = [...new Set(f.righe.flatMap((r) => Object.keys(r.assenze)))];
+
+        const cella = (g) => {
+          if (!g) return '';
+          const parti = [];
+          if (g.ore) parti.push(num(g.ore));
+          if (g.straordinario) parti.push(`<span class="str">+${num(g.straordinario)}</span>`);
+          for (const a of g.assenze) parti.push(`<span class="cell-ass ${esc(a.tipo)}">${CODICI[a.tipo] ?? '?'}</span>`);
+          return parti.join(' ');
+        };
+        const titoloCella = (r, d, g) => g ? `${r.operaio} – ${d}/${mese}: ${[
+          g.ore ? `${num(g.ore)} h` : '', g.straordinario ? `+${num(g.straordinario)} straord.` : '',
+          ...g.assenze.map((a) => `${a.tipo} ${num(a.ore)} h`), g.cantieri.join(', ')].filter(Boolean).join(' · ')}` : '';
+
+        el.innerHTML = `
+          <div class="filters"><label class="f">Mese<input type="month" id="mese" value="${meseSel}"></label></div>
+          <h2 class="print-title">Foglio presenze — ${esc(nomeMeseLungo(anno, mese))}</h2>
+          <section class="card flush">
+            <div class="card-head"><h2 style="text-transform:capitalize">${esc(nomeMeseLungo(anno, mese))}</h2><span class="hint">passa sopra una cella per i dettagli</span></div>
+            <div class="table-wrap"><table class="sheet">
+              <thead><tr><th class="name">Operaio</th>
+                ${giorni.map((g) => `<th class="${weekend(g) ? 'we' : ''}">${iniz(g)}<br>${g}</th>`).join('')}
+                <th>Ore</th><th>Str.</th><th>gg lav.</th>${tipiAss.map((t) => `<th title="${esc(t)}">${CODICI[t] ?? t}</th>`).join('')}</tr></thead>
+              <tbody>${f.righe.map((r) => `<tr><td class="name"><a class="link" href="#/operai/${r.operaioId}">${esc(r.operaio)}</a></td>
+                ${giorni.map((g) => `<td class="${weekend(g) ? 'we' : ''}" title="${esc(titoloCella(r, g, r.giorni[g]))}">${cella(r.giorni[g])}</td>`).join('')}
+                <td><b>${num(r.ore)}</b></td><td>${r.straordinario ? num(r.straordinario) : ''}</td><td>${r.giorniLavorati}</td>
+                ${tipiAss.map((t) => `<td>${r.assenze[t] ? r.assenze[t].giorni : ''}</td>`).join('')}</tr>`).join('')}</tbody>
+            </table></div>
+          </section>
+          <div class="legend"><span><b>8</b> ore ordinarie</span><span><b class="str">+2</b> straordinario</span>
+            ${Object.entries(CODICI).map(([t, c]) => `<span><b>${c}</b> ${t}</span>`).join('')}
+            <span>Nelle colonne finali: giorni di assenza per tipo</span></div>`;
+
+        el.querySelector('#mese').onchange = (e) => { if (e.target.value) { meseSel = e.target.value; ricarica(); } };
+
+        return () => scaricaCSV(`presenze-${meseSel}.csv`, [
+          ['Foglio presenze', nomeMeseLungo(anno, mese)], [],
+          ['Operaio', 'Qualifica', ...giorni.map(String), 'Ore ordinarie', 'Straordinario', 'Giorni lavorati', ...tipiAss.map((t) => `Giorni ${t}`)],
+          ...f.righe.map((r) => [r.operaio, r.qualifica ?? '', ...giorni.map((g) => {
+            const x = r.giorni[g];
+            if (!x) return '';
+            return [x.ore ? num(x.ore) : '', x.straordinario ? '+' + num(x.straordinario) : '', ...x.assenze.map((a) => CODICI[a.tipo] ?? a.tipo)].filter(Boolean).join(' ');
+          }), r.ore, r.straordinario, r.giorniLavorati, ...tipiAss.map((t) => r.assenze[t]?.giorni ?? 0)]),
+        ]);
+      }
+
+      // ---------- Costi per cantiere ----------
+      async function costi(el, ricarica) {
+        const righe = await reportCosti(calcolaPeriodo());
+        const categorie = [...new Set(righe.flatMap((r) => Object.keys(r.spesePerCategoria)))].sort();
+        const tot = (f) => somma(righe, f);
+
+        el.innerHTML = `
+          <div class="filters">${periodoHTML()}</div>
+          <h2 class="print-title">Costi per cantiere — ${esc(descriviPeriodo())}</h2>
+          <section class="kpis">
+            <div class="kpi accent"><div class="lbl">Costo totale</div><div class="val">${euro0(tot((r) => r.costoTotale))}</div><div class="foot">${esc(descriviPeriodo())}</div></div>
+            <div class="kpi"><div class="lbl">Manodopera</div><div class="val">${euro0(tot((r) => r.costoManodopera))}</div><div class="foot">${num(tot((r) => r.ore))} ore</div></div>
+            <div class="kpi"><div class="lbl">Spese</div><div class="val">${euro0(tot((r) => r.spese))}</div><div class="foot">${categorie.length} categorie</div></div>
+          </section>
+          <section class="card flush">
+            ${righe.length ? `<div class="table-wrap"><table>
+              <thead><tr><th>Cantiere</th><th class="n">Ore</th><th class="n">Manodopera</th>
+                ${categorie.map((c) => `<th class="n hide-sm">${esc(c)}</th>`).join('')}
+                <th class="n">Totale</th><th>Budget (costi totali)</th></tr></thead>
+              <tbody>${righe.map((r) => `<tr>
+                <td><a class="link" href="#/cantieri/${r.id}">${esc(r.nome)}</a> ${r.stato !== 'In corso' ? badgeStato(r.stato) : ''}</td>
+                <td class="n">${num(r.ore)}</td><td class="n">${euro0(r.costoManodopera)}</td>
+                ${categorie.map((c) => `<td class="n hide-sm">${r.spesePerCategoria[c] ? euro0(r.spesePerCategoria[c]) : '<span class="muted">·</span>'}</td>`).join('')}
+                <td class="n"><b>${euro0(r.costoTotale)}</b></td>
+                <td>${r.budget ? progresso(r.costoTotale, r.budget) : '<span class="muted">—</span>'}</td></tr>`).join('')}</tbody>
+              <tfoot><tr><td>Totale</td><td class="n">${num(tot((r) => r.ore))}</td><td class="n">${euro0(tot((r) => r.costoManodopera))}</td>
+                ${categorie.map((c) => `<td class="n hide-sm">${euro0(tot((r) => r.spesePerCategoria[c]))}</td>`).join('')}
+                <td class="n">${euro0(tot((r) => r.costoTotale))}</td><td></td></tr></tfoot>
+            </table></div>
+            <p class="muted" style="padding:0 18px 14px;font-size:13px">La barra del budget confronta i costi del periodo selezionato con il budget complessivo: scegli “Tutto” per vedere l’avanzamento reale.</p>`
+              : '<div class="empty">Nessun costo nel periodo</div>'}
+          </section>`;
+        collegaPeriodo(el, ricarica);
+
+        return () => scaricaCSV('costi-cantieri.csv', [
+          ['Periodo', descriviPeriodo()], [],
+          ['Cantiere', 'Stato', 'Ore', 'Manodopera €', ...categorie.map((c) => `${c} €`), 'Spese totali €', 'Costo totale €', 'Budget €'],
+          ...righe.map((r) => [r.nome, r.stato, r.ore, r.costoManodopera, ...categorie.map((c) => r.spesePerCategoria[c] ?? 0), r.spese, r.costoTotale, r.budget ?? '']),
+        ]);
+      }
+      return render;
+    })();
+
+    // ---------- Impostazioni: utenti e backup (solo amministratore) ----------
+    const paginaImpostazioni = (() => {
+      const RUOLI = [
+        { value: 'caposquadra', label: 'Caposquadra — compila rapportini e assenze' },
+        { value: 'admin', label: 'Amministratore — vede e modifica tutto' },
+      ];
+
+      async function render(el) {
+        let utenti;
+        try { utenti = await leggiCollezione('utenti'); }
+        catch (e) { throw new Error(messaggioErrore(e)); }
+        utenti.sort((a, b) => confronta(a.nome, b.nome));
+        const n = info().conteggi;
+        const ricarica = () => render(el);
+
+        el.innerHTML = `
+          <div class="page-head">
+            <div><h1>Impostazioni</h1><p class="sub">Utenti e backup</p></div>
+            <div class="actions"><button class="btn ghost solo-mobile" data-esci>Esci</button></div>
+          </div>
+          <section class="card flush" id="lista">
+            <div class="card-head"><h2>Utenti</h2><button class="btn sm primary" id="nuovo">+ Nuovo utente</button></div>
+            ${tabella([
+              { t: 'Nome', v: (u) => `<b>${esc(u.nome ?? '')}</b>${u.id === dati.utente.uid ? ' <span class="badge acc">Tu</span>' : ''}` },
+              { t: 'Email', v: (u) => esc(u.email ?? '') },
+              { t: 'Ruolo', v: (u) => `<span class="badge ${u.ruolo === 'admin' ? 'info' : ''}">${u.ruolo === 'admin' ? 'Amministratore' : 'Caposquadra'}</span>` },
+              { t: 'Stato', v: (u) => (u.attivo ? '<span class="badge ok">Attivo</span>' : '<span class="badge bad">Disattivato</span>') },
+            ], utenti, { click: true, vuoto: 'Nessun utente' })}
+            <p class="muted" style="padding:0 18px 14px;font-size:13px;margin:0">Il caposquadra vede solo il Registro ore (senza costi).
+              Per togliere l'accesso a qualcuno, disattivalo. La password la può cambiare con “Password dimenticata?” nella pagina di accesso.</p>
+          </section>
+          <section class="card mt">
+            <div class="card-head"><h2>Backup</h2></div>
+            <p style="margin-top:0">In archivio: ${n.operai} operai, ${n.cantieri} cantieri, ${num(n.ore)} registrazioni ore, ${n.spese} spese, ${n.scadenze} documenti.
+              Scarica ogni tanto una copia completa (file .json) e conservala sul PC.</p>
+            <button class="btn" id="backup">Scarica backup</button>
+          </section>`;
+
+        el.querySelector('#nuovo').onclick = () => formModal({
+          titolo: 'Nuovo utente',
+          valori: { ruolo: 'caposquadra' },
+          campi: [
+            { name: 'nome', label: 'Nome e cognome', required: true, full: true },
+            { name: 'email', label: 'Email', type: 'email', required: true, full: true },
+            { name: 'password', label: 'Password provvisoria', required: true, help: 'Almeno 6 caratteri' },
+            { name: 'ruolo', label: 'Ruolo', type: 'select', options: RUOLI },
+          ],
+          async salva(v) {
+            if (v.password.length < 6) throw new Error('La password deve avere almeno 6 caratteri.');
+            try {
+              const uid = await creaAccount(v.email, v.password);
+              await scriviFirestore([{ tipo: 'set', coll: 'utenti', id: uid, dati: { nome: v.nome, email: v.email, ruolo: v.ruolo, attivo: true, creatoIl: new Date().toISOString() } }]);
+            } catch (e) { throw new Error(messaggioErrore(e)); }
+            toast(`Utente creato: ${v.email}`);
+            ricarica();
+          },
+        });
+
+        collegaClick(el.querySelector('#lista'), utenti, (u) => formModal({
+          titolo: 'Modifica utente',
+          valori: u,
+          campi: [
+            { name: 'nome', label: 'Nome e cognome', required: true, full: true },
+            { name: 'ruolo', label: 'Ruolo', type: 'select', options: RUOLI, full: true },
+            { name: 'attivo', label: 'Account attivo (può accedere)', type: 'checkbox', full: true },
+          ],
+          async salva(v) {
+            if (u.id === dati.utente.uid && (v.ruolo !== 'admin' || !v.attivo)) {
+              throw new Error('Non puoi togliere a te stesso il ruolo di amministratore o disattivarti.');
+            }
+            try { await scriviFirestore([{ tipo: 'merge', coll: 'utenti', id: u.id, dati: { nome: v.nome, ruolo: v.ruolo, attivo: v.attivo } }]); }
+            catch (e) { throw new Error(messaggioErrore(e)); }
+            toast('Utente aggiornato');
+            ricarica();
+          },
+        }));
+
+        el.querySelector('#backup').onclick = () => {
+          const a = document.createElement('a');
+          a.href = URL.createObjectURL(new Blob([JSON.stringify(esporta(), null, 1)], { type: 'application/json' }));
+          a.download = `cantiere-backup-${oggiISO()}.json`;
+          document.body.append(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+        };
+      }
+      return render;
+    })();
+
+    // =====================================================================
+    //  ACCESSO: login, primo amministratore, account non abilitato
+    // =====================================================================
+    function schermata(html) {
+      document.querySelector('.shell').hidden = true;
+      const b = document.getElementById('accesso');
+      b.hidden = false;
+      b.innerHTML = `<div class="login-card">
+        <div class="login-brand"><span class="brand-mark"><svg viewBox="0 0 32 32"><path d="M6 22h20v3H6zM9 13l7-6 7 6v8h-4v-5h-6v5H9z"/></svg></span>
+          <span>Il Mio Cantiere</span></div>${html}</div>`;
+      return b;
+    }
+
+    function nascondiSchermata() {
+      document.getElementById('accesso').hidden = true;
+      document.querySelector('.shell').hidden = false;
+    }
+
+    function schermataAccesso() {
+      const b = schermata(`
+        <h1>Accedi</h1>
+        <form class="stack" novalidate>
+          <label class="f">Email<input name="email" type="email" autocomplete="username" required></label>
+          <label class="f">Password<input name="password" type="password" autocomplete="current-password" required></label>
+          <p class="form-err" hidden></p>
+          <button class="btn primary" type="submit">Entra</button>
+          <button class="btn ghost" type="button" id="recupera">Password dimenticata?</button>
+        </form>`);
+      const f = b.querySelector('form');
+      const err = f.querySelector('.form-err');
+      const errore = (m) => { err.textContent = m; err.hidden = false; };
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        err.hidden = true;
+        try { await signInWithEmailAndPassword(auth, f.email.value.trim(), f.password.value); }
+        catch (ex) { errore(messaggioErrore(ex)); }
+      });
+      b.querySelector('#recupera').onclick = async () => {
+        const email = f.email.value.trim();
+        if (!email) return errore('Scrivi la tua email, poi premi di nuovo "Password dimenticata?".');
+        try { await sendPasswordResetEmail(auth, email); toast('Ti abbiamo inviato un’email per reimpostare la password'); }
+        catch (ex) { errore(messaggioErrore(ex)); }
+      };
+      setTimeout(() => f.email.focus(), 50);
+    }
+
+    // Primo avvio: non esiste ancora un amministratore, chi è entrato può diventarlo
+    function schermataPrimoAvvio(u) {
+      const b = schermata(`
+        <h1>Prima configurazione</h1>
+        <p class="muted">Sei il primo utente: diventerai <b>amministratore</b> e potrai creare gli account per i capisquadra.</p>
+        <form class="stack" novalidate>
+          <label class="f">Il tuo nome<input name="nome" required></label>
+          <p class="form-err" hidden></p>
+          <button class="btn primary" type="submit">Diventa amministratore</button>
+          <button class="btn ghost" type="button" data-esci>Esci (${esc(u.email)})</button>
+        </form>`);
+      const f = b.querySelector('form');
+      f.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const err = f.querySelector('.form-err');
+        const nome = f.nome.value.trim();
+        if (!nome) { err.textContent = 'Scrivi il tuo nome'; err.hidden = false; return; }
+        try {
+          const ora = new Date().toISOString();
+          await scriviFirestore([
+            { tipo: 'set', coll: 'utenti', id: u.uid, dati: { nome, email: u.email, ruolo: 'admin', attivo: true, creatoIl: ora } },
+            { tipo: 'set', coll: 'config', id: 'impostazioni', dati: { creatoIl: ora, creatoDa: u.email } },
+          ]);
+          dopoAccesso(u);
+        } catch (ex) { err.textContent = messaggioErrore(ex); err.hidden = false; }
+      });
+    }
+
+    function schermataNonAbilitato(u, motivo) {
+      schermata(`
+        <h1>Accesso non abilitato</h1>
+        <p>${esc(motivo)}</p>
+        <p class="muted">Account: ${esc(u.email)}</p>
+        <div class="actions"><button class="btn" onclick="location.reload()">Riprova</button><button class="btn ghost" data-esci>Esci</button></div>`);
+    }
+
+    // =====================================================================
+    //  AVVIO E NAVIGAZIONE  (indirizzi tipo #/cantieri/abc123)
+    // =====================================================================
+    const app = document.getElementById('app');
+
+    const rotte = {                     // admin: true = solo amministratore
+      '': { render: paginaPanoramica, admin: true },
+      ore: { render: paginaRegistro },
+      cantieri: { render: paginaCantieri, admin: true },
+      operai: { render: paginaOperai, admin: true },
+      spese: { render: paginaSpese, admin: true },
+      report: { render: paginaReport, admin: true },
+      impostazioni: { render: paginaImpostazioni, admin: true },
+    };
+
+    async function naviga() {
+      if (!dati.utente) return;
+      const [percorso, query] = location.hash.replace(/^#\/?/, '').split('?');
+      const [sezione, id] = percorso.split('/');
+      const params = Object.fromEntries(new URLSearchParams(query || ''));
+      if (id) params.id = decodeURIComponent(id);
+
+      const rotta = rotte[sezione || ''];
+      if (!rotta) { app.innerHTML = '<div class="empty">Pagina non trovata</div>'; return; }
+      if (rotta.admin && !isAdmin()) { location.hash = '#/ore'; return; }
+
+      document.querySelectorAll('#nav a').forEach((a) => a.classList.toggle('active', a.dataset.r === (sezione || '')));
+      try {
+        await rotta.render(app, params);
+      } catch (e) {
+        console.error(e);
+        app.innerHTML = `<div class="card"><h2>Si è verificato un problema</h2><p class="muted">${esc(e.message)}</p>
+          <button class="btn" onclick="location.reload()">Ricarica</button></div>`;
+      }
+    }
+
+    async function dopoAccesso(u) {
+      app.innerHTML = '<div class="loading">Caricamento dati…</div>';
+      let profilo;
+      try { profilo = await leggiDoc('utenti', u.uid); }
+      catch (e) { return schermataNonAbilitato(u, 'Impossibile leggere il profilo: ' + messaggioErrore(e)); }
+
+      if (!profilo) {
+        let setup = null;
+        try { setup = await leggiDoc('config', 'impostazioni'); } catch { /* nessun permesso o offline */ }
+        if (!setup) return schermataPrimoAvvio(u);
+        return schermataNonAbilitato(u, "Il tuo account non è ancora abilitato: chiedi all'amministratore di aggiungerti in Impostazioni.");
+      }
+      if (!profilo.attivo) return schermataNonAbilitato(u, "Il tuo account è stato disattivato. Contatta l'amministratore.");
+
+      dati.utente = { uid: u.uid, email: u.email, nome: profilo.nome, ruolo: profilo.ruolo };
+      nascondiSchermata();
+      document.body.classList.toggle('ruolo-caposquadra', !isAdmin());
+      document.getElementById('chiSono').innerHTML = `<b>${esc(profilo.nome || u.email)}</b><span>${isAdmin() ? 'Amministratore' : 'Caposquadra'}</span>`;
+      try {
+        await avviaDati();
+      } catch (e) {
+        app.innerHTML = `<div class="card"><h2>Impossibile caricare i dati</h2><p class="muted">${esc(messaggioErrore(e))}</p>
+          <button class="btn" onclick="location.reload()">Riprova</button></div>`;
+        return;
+      }
+      if (!isAdmin() && !location.hash.startsWith('#/ore')) location.hash = '#/ore';
+      else naviga();
+    }
+
+    onAuthStateChanged(auth, (u) => {
+      if (u) return dopoAccesso(u);
+      fermaDati();
+      dati.utente = null;
+      schermataAccesso();
+    });
+
+    document.addEventListener('click', (e) => { if (e.target.closest('[data-esci]')) signOut(auth); });
+    window.addEventListener('ricarica', naviga);
+    window.addEventListener('hashchange', () => { naviga(); window.scrollTo(0, 0); });
+    // dati cambiati da un altro dispositivo: ridisegno, ma non mentre si compila qualcosa
+    window.addEventListener('dati-aggiornati', () => {
+      if (!document.querySelector('dialog[open]') && !location.hash.startsWith('#/ore')) naviga();
+    });
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+rules_version = '2';
+
+// Regole di sicurezza di Il Mio Cantiere.
+// Ruoli (documento utenti/{uid}):
+//   admin       → vede e modifica tutto, gestisce gli utenti
+//   caposquadra → vede operai e cantieri, compila le ore (rapportini e assenze)
+// Un utente senza documento in "utenti", o con attivo == false, non vede nulla.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function percorso(coll, id) { return /databases/$(database)/documents/$(coll)/$(id); }
+    function loggato() { return request.auth != null; }
+    function profilo() { return get(percorso('utenti', request.auth.uid)).data; }
+    function abilitato() {
+      return loggato() && exists(percorso('utenti', request.auth.uid)) && profilo().attivo == true;
+    }
+    function admin() { return abilitato() && profilo().ruolo == 'admin'; }
+    function squadra() { return abilitato() && profilo().ruolo in ['admin', 'caposquadra']; }
+    function setupFatto() { return exists(percorso('config', 'impostazioni')); }
+
+    // Impostazioni generali. Esiste dopo la prima configurazione (creazione del primo amministratore).
+    match /config/impostazioni {
+      allow read: if loggato();
+      allow create: if loggato() && !setupFatto()
+        && getAfter(percorso('utenti', request.auth.uid)).data.ruolo == 'admin';
+      allow update: if admin();
+      allow delete: if false;
+    }
+
+    match /utenti/{uid} {
+      allow read: if admin() || (loggato() && request.auth.uid == uid);
+      // il primo utente diventa amministratore, solo se la configurazione non è ancora stata fatta
+      allow create: if admin() || (loggato() && request.auth.uid == uid && !setupFatto()
+        && existsAfter(percorso('config', 'impostazioni'))
+        && request.resource.data.ruolo == 'admin' && request.resource.data.attivo == true);
+      allow update, delete: if admin();
+    }
+
+    match /operai/{id}   { allow read: if squadra(); allow write: if admin(); }
+    match /cantieri/{id} { allow read: if squadra(); allow write: if admin(); }
+
+    // Un documento per giorno (id = "aaaa-mm-gg") con tutte le registrazioni di quel giorno
+    match /giorni/{giorno} {
+      allow read: if squadra();
+      allow write: if squadra() && giorno.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    match /spese/{id}    { allow read, write: if admin(); }
+    match /scadenze/{id} { allow read, write: if admin(); }
+  }
+}
