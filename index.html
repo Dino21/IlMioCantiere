@@ -92,6 +92,12 @@
 
     .main { padding: 28px 32px 60px; min-width: 0; outline: none; max-width: 1400px; }
     .loading { color: var(--ink-3); padding: 40px 0; }
+    .ver-tag { font-size: 11px; font-weight: 600; color: var(--ink-3); border: 1px solid var(--line); border-radius: 10px;
+      padding: 2px 7px; white-space: nowrap; font-variant-numeric: tabular-nums; cursor: pointer; vertical-align: middle; margin-left: 8px;
+      font-family: var(--font); letter-spacing: 0; }
+    #updBar { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; border: 0; border-radius: 0;
+      padding: 10px 16px; background: var(--accent); color: var(--accent-ink); font: 600 14px var(--font); cursor: pointer;
+      position: sticky; top: 0; z-index: 40; }
 
     .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 22px; flex-wrap: wrap; }
     .page-head .sub { color: var(--ink-3); margin: 4px 0 0; }
@@ -381,6 +387,7 @@
   </style>
 </head>
 <body>
+  <button id="updBar" hidden onclick="location.reload()"></button>
   <div id="accesso" class="accesso" hidden></div>
   <div class="shell" hidden>
     <aside class="sidebar">
@@ -417,6 +424,9 @@
   </div>
   <div class="toasts" id="toasts" aria-live="polite"></div>
     <script type="module">
+    // Versione della webapp: aggiornarla a OGNI modifica (data AAAA.MM.GG, + lettera se più di una al giorno: 2026.11.15b).
+    // Si vede nella home (Panoramica) e serve a checkUpdate() per avvisare che è stata pubblicata una versione nuova.
+    const APP_VER = '2026.11.15';
     // Versione SDK Firebase: per aggiornarla cambia il numero nei tre indirizzi qui sotto.
     import { initializeApp, deleteApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
     import {
@@ -658,6 +668,31 @@
           <span class="t"><i style="width:${(d.valore / max) * 100}%"></i></span>
           <span class="val">${esc(formato(d.valore))}</span></div>`).join('')}</div>`;
     }
+
+    // ----- versione e aggiornamenti -----
+    function verTag() {
+      return `<span class="ver-tag" data-ver title="Versione in uso: tocca per cercare aggiornamenti">v${APP_VER}</span>`;
+    }
+    // Nuova versione pubblicata? Rilegge la pagina dal server (cache 'no-cache': se non è cambiata il server risponde 304
+    // senza riscaricarla) e confronta APP_VER. Se è diversa mostra la barra in alto: toccandola si ricarica la pagina.
+    let updAt = 0;
+    function checkUpdate(force) {
+      if (!force && Date.now() - updAt < 5 * 60000) return;
+      if (!/^https?:$/.test(location.protocol)) return;
+      updAt = Date.now();
+      return fetch(location.pathname, { cache: 'no-cache' }).then((r) => (r.ok ? r.text() : '')).then((t) => {
+        const m = /const APP_VER = '([^']+)'/.exec(t), b = document.getElementById('updBar');
+        if (!m || m[1] === APP_VER) return false;
+        b.innerHTML = `⬆️ È disponibile una nuova versione (v${esc(m[1])}) · <u>Aggiorna</u>`; b.hidden = false;
+        return true;
+      }).catch(() => false);   // senza rete: riprova più tardi
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) checkUpdate(); });
+    document.addEventListener('click', async (e) => {
+      if (!e.target.closest('[data-ver]')) return;
+      const nuova = await checkUpdate(true);
+      toast(nuova ? 'È disponibile una nuova versione: tocca la barra in alto.' : `Stai usando l'ultima versione (v${APP_VER}).`);
+    });
 
     // ----- toast -----
     function toast(msg, tipo = 'ok') {
@@ -1569,7 +1604,7 @@
 
         el.innerHTML = `
           <div class="page-head">
-            <div><h1>Panoramica</h1><p class="sub" style="text-transform:capitalize">${esc(dataLunga(d.oggi))}</p></div>
+            <div><h1>Panoramica${verTag()}</h1><p class="sub" style="text-transform:capitalize">${esc(dataLunga(d.oggi))}</p></div>
             <div class="actions"><a class="btn primary" href="#/ore">+ Rapportino di oggi</a></div>
           </div>
 
@@ -1638,7 +1673,7 @@
 
       function benvenuto(el) {
         el.innerHTML = `
-          <div class="page-head"><div><h1>Benvenuto</h1></div></div>
+          <div class="page-head"><div><h1>Benvenuto${verTag()}</h1></div></div>
           <section class="card welcome">
             <h2>Iniziamo a organizzare i cantieri</h2>
             <p>Aggiungi i tuoi operai e i cantieri aperti, poi registra le ore ogni giorno con il rapportino.
@@ -2677,6 +2712,7 @@
 
     document.addEventListener('click', (e) => { if (e.target.closest('[data-esci]')) signOut(auth); });
     window.addEventListener('ricarica', naviga);
+    checkUpdate();
     window.addEventListener('hashchange', () => { naviga(); window.scrollTo(0, 0); });
     // dati cambiati da un altro dispositivo: ridisegno, ma non mentre si compila qualcosa
     window.addEventListener('dati-aggiornati', () => {

@@ -1,0 +1,33 @@
+# Pubblica Il Mio Cantiere su Firebase Hosting (fa quello che fa deploy.bat, tranne le regole di Firestore).
+# Parte da solo a ogni push su main che cambia l'app, oppure a mano da GitHub:
+# scheda Actions -> "Pubblica su Firebase" -> Run workflow.
+name: Pubblica su Firebase
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - index.html
+      - firebase.json
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-hosting
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Versione che si pubblica
+        run: grep -o "APP_VER = '[^']*'" index.html
+
+      - name: Pubblica su Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_IL_MIO_CANTIERE }}
+          projectId: il-mio-cantiere
+          channelId: live
